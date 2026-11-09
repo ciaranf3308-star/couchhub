@@ -27,10 +27,10 @@ public static class UpdateService
     {
         try
         {
-            var manager = new UpdateManager(FeedUrl);
+            using var manager = new UpdateManager(FeedUrl);
             if (!manager.IsInstalled)
             {
-                Logger.Info("Update check skipped: CouchHub is running portable, not installed via Setup.exe.");
+                Logger.Info("Update check skipped: RedSilk is running portable, not installed via Setup.exe.");
                 return new Result(Outcome.NotInstalled,
                     "Not installed via Setup.exe — updates only flow for the installed copy.");
             }

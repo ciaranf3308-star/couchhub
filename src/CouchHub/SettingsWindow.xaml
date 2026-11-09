@@ -1,7 +1,7 @@
 <Window x:Class="CouchHub.SettingsWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="CouchHub Settings"
+        Title="RedSilk Settings"
         Width="980" Height="760"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
@@ -35,18 +35,18 @@
       <TextBox x:Name="TvArgsBox" Style="{StaticResource SettingsTextBoxStyle}" />
 
       <TextBlock Text="Live TV guide" FontSize="22" FontFamily="{StaticResource DisplayFont}" Margin="0,18,0,0" />
-      <TextBlock Text="Free guide from open-epg — no account needed. CouchHub downloads the Ireland or UK guide and shows now / next for the channel you pick on the TV tile."
+      <TextBlock Text="Free guide from open-epg — no account needed. RedSilk downloads the Ireland or UK guide and shows now / next for the channel you pick on the TV tile."
                  FontSize="16" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,6,0,0" />
       <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
         <TextBlock Text="Guide" FontSize="18" VerticalAlignment="Center" Margin="0,0,12,0" />
-        <ComboBox x:Name="EpgFeedCombo" FontSize="18" Width="340" SelectionChanged="EpgFeedCombo_SelectionChanged">
+        <ComboBox x:Name="EpgFeedCombo" FontSize="18" Width="340" SelectionChanged="EpgFeedCombo_SelectionChanged" DropDownOpened="EpgFeedCombo_DropDownOpened">
           <ComboBoxItem Content="Ireland" Tag="https://www.open-epg.com/files/ireland.xml.gz" />
           <ComboBoxItem Content="United Kingdom" Tag="https://www.open-epg.com/files/unitedkingdom.xml.gz" />
         </ComboBox>
       </StackPanel>
       <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
         <TextBlock Text="Channel" FontSize="18" VerticalAlignment="Center" Margin="0,0,12,0" />
-        <ComboBox x:Name="EpgChannelCombo" FontSize="18" Width="340" SelectionChanged="EpgChannelCombo_SelectionChanged" />
+        <ComboBox x:Name="EpgChannelCombo" FontSize="18" Width="340" SelectionChanged="EpgChannelCombo_SelectionChanged" DropDownOpened="EpgChannelCombo_DropDownOpened" />
         <Button Content="Refresh channels" Style="{StaticResource SettingsButtonStyle}" Click="EpgRefreshChannels_Click" Margin="12,0,0,0" />
       </StackPanel>
       <TextBlock Text="Picking a channel from the other guide switches the guide above to match."
@@ -90,19 +90,10 @@
           <ComboBoxItem Content="200%" Tag="200" />
         </ComboBox>
       </StackPanel>
-      <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-        <TextBlock Text="Theme" FontSize="18" VerticalAlignment="Center" Margin="0,0,12,0" />
-        <ComboBox x:Name="ThemeCombo" FontSize="18" Width="340">
-          <ComboBoxItem Content="Bedroom — burgundy &amp; beige" Tag="Bedroom" />
-          <ComboBoxItem Content="Hotel — brass &amp; charcoal" Tag="Hotel" />
-        </ComboBox>
-      </StackPanel>
-      <TextBlock Text="Bedroom is burgundy dark with beige bright, to match the room. Hotel is the brass and charcoal look. Applies when CouchHub restarts."
-                 FontSize="16" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,8,0,0" />
-      <CheckBox x:Name="StartupCheck" Content="Start CouchHub when Windows signs in" FontSize="18" Margin="0,10,0,0" />
+      <CheckBox x:Name="StartupCheck" Content="Start RedSilk when Windows signs in" FontSize="18" Margin="0,10,0,0" />
       <TextBlock Text="Return-home shortcut" FontSize="18" Margin="0,12,0,0" />
       <TextBox x:Name="HotkeyBox" Style="{StaticResource SettingsTextBoxStyle}" />
-      <TextBlock Text="Example: Ctrl+Alt+Home. If another app already uses it, CouchHub will say so on the dashboard."
+      <TextBlock Text="Example: Ctrl+Alt+Home. If another app already uses it, RedSilk will say so on the dashboard."
                  FontSize="16" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" />
 
       <TextBlock Text="Controller" FontSize="22" FontFamily="{StaticResource DisplayFont}" Margin="0,22,0,6" />
@@ -110,7 +101,7 @@
                  Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" />
 
       <TextBlock Text="Updates" FontSize="22" FontFamily="{StaticResource DisplayFont}" Margin="0,22,0,6" />
-      <TextBlock Text="CouchHub checks for updates when it starts and stages them silently — a downloaded update applies the next time CouchHub launches, so nothing restarts mid-session. Only the copy installed via Setup.exe updates itself; a portable copy does not."
+      <TextBlock Text="RedSilk checks for updates when it starts and stages them silently — a downloaded update applies the next time RedSilk launches, so nothing restarts mid-session. Only the copy installed via Setup.exe updates itself; a portable copy does not."
                  FontSize="16" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" />
       <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
         <Button x:Name="CheckUpdatesButton" Content="Check for updates" Style="{StaticResource SettingsButtonStyle}" Click="CheckUpdates_Click" />
@@ -119,7 +110,7 @@
                  Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,8,0,0" />
 
       <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,28,0,0">
-        <Button Content="Exit CouchHub" Style="{StaticResource SettingsButtonStyle}" Click="Exit_Click" />
+        <Button Content="Exit RedSilk" Style="{StaticResource SettingsButtonStyle}" Click="Exit_Click" />
         <Button Content="Cancel" Style="{StaticResource SettingsButtonStyle}" Click="Cancel_Click" />
         <Button Content="Save" Style="{StaticResource PrimaryButtonStyle}" Click="Save_Click" />
       </StackPanel>

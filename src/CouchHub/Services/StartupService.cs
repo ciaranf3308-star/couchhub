@@ -10,14 +10,19 @@ namespace CouchHub.Services;
 /// </summary>
 public sealed class StartupService
 {
-    private const string ShortcutName = "CouchHub.lnk";
+    // Display name of the product; the pack id / exe stay "CouchHub"
+    // (renaming those would break auto-updates from earlier versions).
+    private const string ShortcutName = "RedSilk LingLing Edition.lnk";
+    private const string LegacyShortcutName = "CouchHub.lnk";
 
     public static string StartupFolder =>
         Environment.GetFolderPath(Environment.SpecialFolder.Startup);
 
     public static string ShortcutPath => Path.Combine(StartupFolder, ShortcutName);
 
-    public bool IsEnabled => File.Exists(ShortcutPath);
+    private static string LegacyShortcutPath => Path.Combine(StartupFolder, LegacyShortcutName);
+
+    public bool IsEnabled => File.Exists(ShortcutPath) || File.Exists(LegacyShortcutPath);
 
     /// <summary>Enable or disable autostart. Returns false with a logged reason on failure.</summary>
     public bool SetEnabled(bool enabled)
@@ -32,11 +37,16 @@ public sealed class StartupService
                     ?? string.Empty;
                 if (string.IsNullOrEmpty(exePath)) return false;
                 CreateShortcut(ShortcutPath, exePath);
+                // Retire the pre-rebrand shortcut so sign-in does not
+                // launch the app twice (single-instance would exit the
+                // second copy, but two shortcuts is untidy).
+                if (File.Exists(LegacyShortcutPath)) File.Delete(LegacyShortcutPath);
                 Logger.Info("Startup shortcut created.");
             }
             else
             {
                 if (File.Exists(ShortcutPath)) File.Delete(ShortcutPath);
+                if (File.Exists(LegacyShortcutPath)) File.Delete(LegacyShortcutPath);
                 Logger.Info("Startup shortcut removed.");
             }
             return true;
@@ -65,7 +75,7 @@ public sealed class StartupService
             {
                 shortcut.TargetPath = targetPath;
                 shortcut.WorkingDirectory = Path.GetDirectoryName(targetPath) ?? string.Empty;
-                shortcut.Description = "CouchHub living-room launcher";
+                shortcut.Description = "RedSilk LingLing Edition living-room launcher";
                 shortcut.IconLocation = targetPath + ",0";
                 shortcut.Save();
             }

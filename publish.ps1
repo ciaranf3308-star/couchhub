@@ -1,4 +1,4 @@
-# CouchHub v0.4 — publish a portable self-contained win-x64 release.
+# CouchHub v0.5.1 — publish a portable self-contained win-x64 release.
 # Run on Windows from the repo root, with the .NET 10 SDK installed:
 #   powershell -ExecutionPolicy Bypass -File .\publish.ps1
 # Output: .\publish\CouchHub\  (copy this whole folder to the mini PC)
@@ -28,4 +28,4 @@ Write-Host ''
 Write-Host "Done. Portable release: $outDir" -ForegroundColor Green
 Write-Host "CouchHub.exe: $([math]::Round($exe.Length / 1MB, 1)) MB" -ForegroundColor Green
 Write-Host 'Copy the whole folder to the mini PC. No install step, no admin rights needed.' -ForegroundColor Green
-Write-Host 'First run creates %LOCALAPPDATA%\CouchHub\config.json with empty launch targets.' -ForegroundColor Green
+Write-Host 'First run creates %AppData%\CouchHub\config.json with empty launch targets.' -ForegroundColor Green

@@ -25,6 +25,10 @@ public partial class SettingsWindow : Window
     private string _epgChannelId = "RTÉOne.ie";
     private string _epgChannelName = "RTÉ One";
     private bool _populatingEpg;
+    // R2: monotonic id for channel-list loads — a stale load that
+    // finishes after a newer one must not populate the combo or
+    // overwrite _epgChannelId.
+    private int _epgLoadId;
 
     public SettingsWindow(App app)
     {
@@ -46,12 +50,6 @@ public partial class SettingsWindow : Window
                 ScalingCombo.SelectedItem = item;
         }
         ScalingCombo.SelectedItem ??= ScalingCombo.Items[0];
-        foreach (ComboBoxItem item in ThemeCombo.Items)
-        {
-            if ((item.Tag as string) == _app.Config.Theme)
-                ThemeCombo.SelectedItem = item;
-        }
-        ThemeCombo.SelectedItem ??= ThemeCombo.Items[0];
 
         _epgFeedUrl = _app.Config.Epg.FeedUrl;
         _epgChannelId = _app.Config.Epg.ChannelId;
@@ -63,7 +61,11 @@ public partial class SettingsWindow : Window
         EpgXtreamUserBox.Text = _app.Config.Epg.XtreamUsername;
         EpgXtreamPasswordBox.Password = _app.Config.Epg.XtreamPassword;
         EpgXtreamChannelBox.Text = _app.Config.Epg.XtreamChannelName;
-        _ = LoadEpgChannelsAsync();
+        // Channel list is lazy: Settings must not download the full
+        // guide on open. Show just the configured channel until the
+        // user opens the guide section or hits Refresh channels.
+        EpgChannelCombo.Items.Add(new ComboBoxItem { Content = _epgChannelName, Tag = _epgChannelId });
+        EpgChannelCombo.SelectedItem = EpgChannelCombo.Items[0];
 
         _controllerTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
         _controllerTimer.Tick += (_, _) => RefreshControllerStatus();
@@ -109,7 +111,7 @@ public partial class SettingsWindow : Window
         ControllerStatusText.Text = _app.Input.IsControllerConnected
             ? $"Controller connected ({_app.Input.XInputDll}). D-pad / stick to move, A to select, B to close."
             : $"No controller connected right now ({_app.Input.XInputDll} loaded). " +
-              "Connect an Xbox controller and it will work without restarting CouchHub.";
+              "Connect an Xbox controller and it will work without restarting RedSilk.";
     }
 
     // ----- Live TV guide -------------------------------------------------------
@@ -139,7 +141,9 @@ public partial class SettingsWindow : Window
 
     private async Task LoadEpgChannelsAsync()
     {
+        int loadId = ++_epgLoadId;
         var channels = await _epgService.GetChannelsAsync(_epgFeedUrl);
+        if (loadId != _epgLoadId) return; // a newer load superseded this one
         if (channels.Count == 0) channels = EpgService.PresetChannels;
         _populatingEpg = true;
         EpgChannelCombo.Items.Clear();
@@ -171,6 +175,10 @@ public partial class SettingsWindow : Window
         }
         _populatingEpg = false;
     }
+
+    private void EpgFeedCombo_DropDownOpened(object sender, EventArgs e) => _ = LoadEpgChannelsAsync();
+
+    private void EpgChannelCombo_DropDownOpened(object sender, EventArgs e) => _ = LoadEpgChannelsAsync();
 
     private void EpgFeedCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
@@ -233,6 +241,13 @@ public partial class SettingsWindow : Window
                     $"at {guide.Next.StartUtc.ToLocalTime():HH:mm}, via {guide.Source}.";
             else
                 EpgTestStatusText.Text = "No guide data for that channel — check the channel and guide, then try again.";
+        }
+        catch (Exception ex)
+        {
+            // R1: a malformed URL must land here as a plain message,
+            // never an unhandled async-void crash.
+            Logger.Warn($"Test guide failed: {ex.GetType().Name}");
+            EpgTestStatusText.Text = "Guide check failed — check the guide and provider URLs, then try again.";
         }
         finally
         {
@@ -329,6 +344,21 @@ public partial class SettingsWindow : Window
             }
         }
 
+        // R1: a malformed guide / provider URL must fail here with a
+        // plain message — never crash "Test guide" later. Same style
+        // as the launch-target validation above.
+        if (!string.IsNullOrWhiteSpace(_epgFeedUrl) && !IsValidHttpUrl(_epgFeedUrl))
+        {
+            ErrorText.Text = "The guide URL is not a valid http(s) address.";
+            return;
+        }
+        if (!string.IsNullOrWhiteSpace(EpgXtreamServerBox.Text) &&
+            !IsValidHttpUrl(EpgXtreamServerBox.Text.Trim()))
+        {
+            ErrorText.Text = "The provider server URL is not a valid http(s) address.";
+            return;
+        }
+
         _app.Config.Gaming.ExePath = GamingPathBox.Text.Trim();
         _app.Config.Gaming.Arguments = GamingArgsBox.Text.Trim();
         _app.Config.Tv.ExePath = TvPathBox.Text.Trim();
@@ -342,11 +372,9 @@ public partial class SettingsWindow : Window
         _app.Config.Epg.XtreamUsername = EpgXtreamUserBox.Text.Trim();
         _app.Config.Epg.XtreamPassword = EpgXtreamPasswordBox.Password;
         _app.Config.Epg.XtreamChannelName = string.IsNullOrWhiteSpace(EpgXtreamChannelBox.Text)
-            ? "RTÉ One" : EpgXtreamChannelBox.Text.Trim();
+            ? _epgChannelName : EpgXtreamChannelBox.Text.Trim();
         _app.Config.FullscreenDashboard = FullscreenCheck.IsChecked == true;
         _app.Config.ScalingMode = ((ComboBoxItem?)ScalingCombo.SelectedItem)?.Tag as string ?? "System";
-        string theme = ((ComboBoxItem?)ThemeCombo.SelectedItem)?.Tag as string ?? "Bedroom";
-        _app.Config.Theme = theme == "Hotel" ? "Hotel" : "Bedroom";
         _app.Config.ReturnHomeShortcut = string.IsNullOrWhiteSpace(HotkeyBox.Text)
             ? "Ctrl+Alt+Home" : HotkeyBox.Text.Trim();
 
@@ -363,11 +391,15 @@ public partial class SettingsWindow : Window
 
         if (!_app.Startup.SetEnabled(StartupCheck.IsChecked == true))
             ErrorText.Text = "Settings saved, but the startup shortcut could not be changed. " +
-                             "CouchHub will keep its previous startup setting.";
+                             "RedSilk will keep its previous startup setting.";
 
         DialogResult = true;
         Close();
     }
+
+    private static bool IsValidHttpUrl(string url) =>
+        Uri.TryCreate(url.Trim(), UriKind.Absolute, out Uri? uri) &&
+        (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
 
     private void Cancel_Click(object sender, RoutedEventArgs e)
     {
@@ -377,7 +409,7 @@ public partial class SettingsWindow : Window
 
     private void Exit_Click(object sender, RoutedEventArgs e)
     {
-        if (MessageBox.Show("Exit CouchHub completely?", "CouchHub",
+        if (MessageBox.Show("Exit RedSilk completely?", "RedSilk",
                 MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
         {
             Application.Current.Shutdown();

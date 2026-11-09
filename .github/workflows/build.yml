@@ -41,7 +41,10 @@ jobs:
         run: dotnet tool install -g vpk --version 1.2.161
 
       - name: Pack Velopack release
-        run: vpk pack -u CouchHub -v ${{ steps.version.outputs.version }} -p publish\CouchHub -e CouchHub.exe -o Releases
+        # --packTitle is display-only (shortcuts, Apps & Features): the
+        # pack id (-u CouchHub) and exe stay untouched, so the update
+        # chain from 0.4.0/0.5.0 keeps working.
+        run: vpk pack -u CouchHub -v ${{ steps.version.outputs.version }} -p publish\CouchHub -e CouchHub.exe --packTitle "RedSilk LingLing Edition" -o Releases
 
       - name: Upload portable build
         uses: actions/upload-artifact@v4

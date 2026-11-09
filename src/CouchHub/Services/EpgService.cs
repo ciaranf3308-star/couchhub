@@ -61,7 +61,8 @@ public sealed class EpgService
 
     static EpgService()
     {
-        Http.DefaultRequestHeaders.UserAgent.ParseAdd("CouchHub/0.5.0 (Windows)");
+        string version = typeof(EpgService).Assembly.GetName().Version?.ToString(3) ?? "0.5.1";
+        Http.DefaultRequestHeaders.UserAgent.ParseAdd($"CouchHub/{version} (Windows)");
     }
 
     // Verified live 2026-11-09. These are the only fallback URLs —
@@ -211,7 +212,7 @@ public sealed class EpgService
                 Logger.Info($"Live guide: downloaded guide from {HostOf(url)}.");
                 return xml;
             }
-            catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or IOException or InvalidDataException)
+            catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or IOException or InvalidDataException or UriFormatException or ArgumentException)
             {
                 Logger.Warn($"Live guide: download failed from {HostOf(url)}: {ex.GetType().Name}");
             }
@@ -235,11 +236,26 @@ public sealed class EpgService
         // .gz magic bytes 1F 8B; some mirrors serve plain XML instead.
         if (bytes.Length >= 2 && bytes[0] == 0x1F && bytes[1] == 0x8B)
         {
+            // R5: cap decompressed output — a gzip bomb (tiny file, huge
+            // XML) must not eat the PC's memory. 16M chars ≈ 32 MB.
+            // Callers treat InvalidDataException as "guide unavailable".
+            const int maxChars = 16 * 1024 * 1024;
             using var input = new MemoryStream(bytes);
             using var gzip = new GZipStream(input, CompressionMode.Decompress);
             using var reader = new StreamReader(gzip, Encoding.UTF8);
-            return reader.ReadToEnd();
+            char[] buffer = new char[8192];
+            var sb = new StringBuilder();
+            int read;
+            while ((read = reader.Read(buffer, 0, buffer.Length)) > 0)
+            {
+                sb.Append(buffer, 0, read);
+                if (sb.Length > maxChars)
+                    throw new InvalidDataException("Decompressed guide exceeds 32 MB.");
+            }
+            return sb.ToString();
         }
+        if (bytes.Length > 32 * 1024 * 1024)
+            throw new InvalidDataException("Guide exceeds 32 MB.");
         return Encoding.UTF8.GetString(bytes);
     }
 
@@ -380,7 +396,7 @@ public sealed class EpgService
                 };
             return null;
         }
-        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException or InvalidOperationException)
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException or InvalidOperationException or UriFormatException or ArgumentException)
         {
             Logger.Warn($"Live guide (provider): {ex.GetType().Name} from {HostOf(baseUrl)}.");
             return null;

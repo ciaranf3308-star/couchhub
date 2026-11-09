@@ -50,18 +50,18 @@ public partial class MainWindow : Window
         _epgTimer = new DispatcherTimer { Interval = TimeSpan.FromMinutes(30) };
         _epgTimer.Tick += (_, _) => _ = RefreshEpgAsync();
 
-        // Tray fallback: hidden CouchHub is always recoverable from here,
+        // Tray fallback: hidden RedSilk is always recoverable from here,
         // even if the hotkey is taken by another app.
         _trayIcon = new System.Windows.Forms.NotifyIcon
         {
-            Text = "CouchHub — click to return",
+            Text = "RedSilk LingLing Edition — click to return",
             Visible = false,
             Icon = System.Drawing.SystemIcons.Application
         };
         _trayIcon.DoubleClick += (_, _) => ShowDashboard();
         var trayMenu = new System.Windows.Forms.ContextMenuStrip();
-        trayMenu.Items.Add("Return to CouchHub", null, (_, _) => ShowDashboard());
-        trayMenu.Items.Add("Exit CouchHub", null, (_, _) => Application.Current.Shutdown());
+        trayMenu.Items.Add("Return to RedSilk", null, (_, _) => ShowDashboard());
+        trayMenu.Items.Add("Exit RedSilk", null, (_, _) => Application.Current.Shutdown());
         _trayIcon.ContextMenuStrip = trayMenu;
 
         // Gamepad events arrive on the input thread: marshal to the UI thread.
@@ -99,15 +99,18 @@ public partial class MainWindow : Window
         _ = RefreshEpgAsync();
         _epgTimer.Start();
 
+        // Register the hotkey BEFORE the status line below: a failed
+        // registration reports via UpdateStatus, and it must not
+        // overwrite the "settings file was damaged" message.
+        RegisterReturnHomeHotkey();
+
         if (_app.Config.RecoveredFromMalformedFile)
-            UpdateStatus("Your settings file was damaged, so CouchHub started with defaults. " +
+            UpdateStatus("Your settings file was damaged, so RedSilk started with defaults. " +
                          "A backup of the damaged file was kept next to config.json.");
         else
             UpdateStatus(_app.Input.IsControllerConnected
                 ? "Controller ready"
                 : "No controller detected. Keyboard and mouse work.");
-
-        RegisterReturnHomeHotkey();
     }
 
     private void Cleanup()
@@ -142,17 +145,27 @@ public partial class MainWindow : Window
         {
             Left = 0; Top = 0;
         }
+        // Display settings may have changed the fitting scale too.
+        ApplyScaling();
     }
 
     private void ApplyScaling()
     {
-        double scale = _app.Config.ScalingMode switch
+        double requested = _app.Config.ScalingMode switch
         {
             "125" => 1.25,
             "150" => 1.5,
             "200" => 2.0,
             _ => 1.0 // "System" (or anything unknown): rely on Windows DPI scaling
         };
+        // R3: the LayoutTransform scale compounds with Windows DPI
+        // scaling, so 150%/200% on a 1080p screen would push the footer
+        // and tiles off the reachable area (there is no ScrollViewer).
+        // Cap the effective scale so the 1920x1080 design still fits the
+        // primary screen (in device-independent pixels), never below 0.5.
+        double fit = Math.Min(SystemParameters.PrimaryScreenWidth / 1920.0,
+                              SystemParameters.PrimaryScreenHeight / 1080.0);
+        double scale = Math.Clamp(Math.Min(requested, fit), 0.5, 2.0);
         RootGrid.LayoutTransform = scale == 1.0
             ? System.Windows.Media.Transform.Identity
             : new System.Windows.Media.ScaleTransform(scale, scale);
@@ -261,7 +274,14 @@ public partial class MainWindow : Window
     private void Tile_GotFocus(object sender, RoutedEventArgs e)
     {
         if (sender is Button tile && int.TryParse(tile.Tag?.ToString(), out int index))
+        {
             _selectedIndex = index;
+            // R6: the 1.03 focus lift scales about the tile centre, so
+            // without a Z-order raise the glowing edge is clipped by the
+            // neighbour tile. Focused tile on top, the rest back to 0.
+            foreach (var t in _tiles)
+                Panel.SetZIndex(t, t == tile ? 1 : 0);
+        }
     }
 
     private void Tile_Click(object sender, RoutedEventArgs e)
@@ -331,7 +351,7 @@ public partial class MainWindow : Window
         if (!result.Success)
         {
             UpdateStatus(result.ErrorMessage ?? "Could not start the application.");
-            MessageBox.Show(result.ErrorMessage, "CouchHub",
+            MessageBox.Show(result.ErrorMessage, "RedSilk",
                 MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
@@ -345,6 +365,7 @@ public partial class MainWindow : Window
     {
         _app.Input.SetPaused(true);
         _clockTimer.Stop();
+        _epgTimer.Stop();
         Hide();
         _trayIcon.Visible = true;
         Logger.Info("Dashboard hidden (desktop / external app).");
@@ -364,6 +385,8 @@ public partial class MainWindow : Window
         _trayIcon.Visible = false;
         _app.Input.SetPaused(false);
         _clockTimer.Start();
+        _epgTimer.Start();
+        _ = RefreshEpgAsync(); // the guide may be stale after a long hide
         UpdateClock();
         WindowHelper.FlashTopmost(this);
         Activate();
@@ -414,16 +437,36 @@ public partial class MainWindow : Window
 
     // ----- Return-home hotkey ------------------------------------------------------
 
+    private bool _wndProcHooked;
+    private bool _hotkeyInitPending;
+
     private void RegisterReturnHomeHotkey()
     {
         var source = PresentationSource.FromVisual(this) as HwndSource;
         if (source is null)
         {
-            // Not yet backed by a window handle; retry once the source exists.
-            SourceInitialized += (_, _) => RegisterReturnHomeHotkey();
+            // Not yet backed by a window handle; retry once the source
+            // exists. Subscribe only once, and the retry unsubscribes
+            // itself — repeated calls must not stack handlers.
+            if (_hotkeyInitPending) return;
+            _hotkeyInitPending = true;
+            EventHandler? handler = null;
+            handler = (_, _) =>
+            {
+                SourceInitialized -= handler;
+                _hotkeyInitPending = false;
+                RegisterReturnHomeHotkey();
+            };
+            SourceInitialized += handler;
             return;
         }
-        source.AddHook(WndProc);
+        // Hook WndProc exactly once: AddHook on every call would stack
+        // the same handler and fire ShowDashboard once per registration.
+        if (!_wndProcHooked)
+        {
+            source.AddHook(WndProc);
+            _wndProcHooked = true;
+        }
         if (_hotkeyRegistered) WindowHelper.UnregisterHotkey(this, ReturnHomeHotkeyId);
         _hotkeyRegistered = WindowHelper.TryRegisterHotkey(this, ReturnHomeHotkeyId, _app.Config.ReturnHomeShortcut);
         if (!_hotkeyRegistered)

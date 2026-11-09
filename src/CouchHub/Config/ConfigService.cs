@@ -5,16 +5,26 @@ using CouchHub.Services;
 namespace CouchHub.Config;
 
 /// <summary>
-/// Loads / saves %LOCALAPPDATA%\CouchHub\config.json.
+/// Loads / saves %AppData%\CouchHub\config.json (Roaming, since v0.5.1:
+/// Velopack replaces the whole install folder on reinstall, so a config
+/// in LocalAppData would not survive — Roaming does). On first run after
+/// the move, a config still sitting in %LOCALAPPDATA%\CouchHub is copied
+/// over once (migration) and the old file is left in place.
 /// Rules: absent file -> create defaults; malformed file -> back it up,
 /// return defaults, never crash, and let the UI tell the user.
+/// Logs stay in %LOCALAPPDATA%\CouchHub\logs — only the config moves.
 /// </summary>
 public sealed class ConfigService
 {
     public static string ConfigDirectory =>
-        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CouchHub");
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CouchHub");
 
     public static string ConfigPath => Path.Combine(ConfigDirectory, "config.json");
+
+    // Pre-v0.5.1 location, for the one-time migration in Load().
+    private static string LegacyConfigPath => Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        "CouchHub", "config.json");
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -29,6 +39,7 @@ public sealed class ConfigService
         try
         {
             Directory.CreateDirectory(ConfigDirectory);
+            MigrateLegacyConfigOnce();
             if (!File.Exists(ConfigPath))
             {
                 var fresh = new AppConfig();
@@ -53,8 +64,6 @@ public sealed class ConfigService
             if (string.IsNullOrWhiteSpace(config.Epg.ChannelName))
                 config.Epg.ChannelName = "RTÉ One";
             config.LastFocusedTile = Math.Clamp(config.LastFocusedTile, 0, 3);
-            if (config.Theme != "Hotel" && config.Theme != "Bedroom")
-                config.Theme = "Bedroom";
             return config;
         }
         catch (Exception ex) when (ex is JsonException or IOException or UnauthorizedAccessException)
@@ -77,6 +86,24 @@ public sealed class ConfigService
         string temp = ConfigPath + ".tmp";
         File.WriteAllText(temp, json);
         File.Move(temp, ConfigPath, overwrite: true);
+    }
+
+    /// <summary>One-time move from the pre-v0.5.1 LocalAppData location:
+    /// if the Roaming config does not exist yet but the old one does,
+    /// copy it over. The old file is left in place (harmless, and a
+    /// rollback to 0.5.0 would still find it). Never throws.</summary>
+    private static void MigrateLegacyConfigOnce()
+    {
+        try
+        {
+            if (File.Exists(ConfigPath) || !File.Exists(LegacyConfigPath)) return;
+            File.Copy(LegacyConfigPath, ConfigPath);
+            Logger.Info("Config migrated from %LOCALAPPDATA%\\CouchHub to %AppData%\\CouchHub.");
+        }
+        catch (Exception ex)
+        {
+            Logger.Warn($"Config migration skipped: {ex.GetType().Name}");
+        }
     }
 
     private static void TryPreserveCorruptFile()

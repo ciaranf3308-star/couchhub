@@ -15,10 +15,11 @@
     <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
     <!-- No trimming / no AOT: WPF is not compatible with trimming in v0.1. -->
     <PublishTrimmed>false</PublishTrimmed>
-    <Version>0.5.0</Version>
-    <AssemblyVersion>0.5.0.0</AssemblyVersion>
-    <FileVersion>0.5.0.0</FileVersion>
-    <Description>CouchHub — lightweight native Windows living-room launcher</Description>
+    <Version>0.5.1</Version>
+    <AssemblyVersion>0.5.1.0</AssemblyVersion>
+    <FileVersion>0.5.1.0</FileVersion>
+    <AssemblyTitle>RedSilk LingLing Edition</AssemblyTitle>
+    <Description>RedSilk LingLing Edition — lightweight native Windows living-room launcher</Description>
     <Copyright>Copyright (c) 2026</Copyright>
   </PropertyGroup>
 
@@ -33,6 +34,7 @@
        never depends on loose files on the PC. -->
   <ItemGroup>
     <Resource Include="Assets\Tiles\*.jpg" />
+    <Resource Include="Assets\redsilk-lingling.jpg" />
   </ItemGroup>
 
   <!-- UseWindowsForms adds an implicit "using System.Windows.Forms;"

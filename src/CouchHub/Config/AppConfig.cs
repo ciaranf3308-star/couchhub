@@ -122,13 +122,6 @@ public sealed class AppConfig
     public bool FullscreenDashboard { get; set; } = true;
 
     /// <summary>
-    /// Dashboard theme: "Bedroom" (deep wine burgundy, beige bright —
-    /// the bedroom) or "Hotel" (brass and warm charcoal). Applied at
-    /// startup; unknown values fall back to Bedroom.
-    /// </summary>
-    public string Theme { get; set; } = "Bedroom";
-
-    /// <summary>
     /// App-level scaling on top of Windows DPI scaling.
     /// "System" = no extra scaling; "125" / "150" / "200" = that percent.
     /// </summary>

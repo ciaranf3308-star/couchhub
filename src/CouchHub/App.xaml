@@ -2,9 +2,9 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              StartupUri="MainWindow.xaml">
-  <!-- No theme merged here on purpose: App.OnStartup loads Theme.xaml
-       (Hotel) or ThemeBedroom.xaml (Bedroom) from config before the
-       StartupUri window is created. See App.xaml.cs ApplyTheme. -->
+  <!-- No theme merged here on purpose: App.OnStartup loads
+       ThemeRedSilk.xaml before the StartupUri window is created.
+       Single theme since v0.5.1 (Red Silk). See App.xaml.cs ApplyTheme. -->
   <Application.Resources>
     <!-- Hero tile art (v0.5): original generated photography, compiled
          into the assembly (see csproj Resource include). Theme-independent

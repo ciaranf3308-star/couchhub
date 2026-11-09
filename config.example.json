@@ -1,7 +1,7 @@
 {
-  // CouchHub example configuration.
-  // Copy to %LOCALAPPDATA%\CouchHub\config.json, or just open Settings in
-  // CouchHub — it generates this file automatically on first run.
+  // RedSilk LingLing Edition example configuration (pack id / exe stay "CouchHub").
+  // Copy to %AppData%\CouchHub\config.json, or just open Settings in
+  // RedSilk — it generates this file automatically on first run.
   // NEVER put IPTV passwords, tokens or other credentials in this file.
   "gaming": {
     "displayName": "Gaming",
