@@ -46,6 +46,8 @@ public sealed class ConfigService
             config.Tv ??= new LaunchTarget { DisplayName = "TV" };
             config.YouTube ??= new LaunchTarget { DisplayName = "YouTube" };
             config.LastFocusedTile = Math.Clamp(config.LastFocusedTile, 0, 3);
+            if (config.Theme != "Hotel" && config.Theme != "Bedroom")
+                config.Theme = "Bedroom";
             return config;
         }
         catch (Exception ex) when (ex is JsonException or IOException or UnauthorizedAccessException)

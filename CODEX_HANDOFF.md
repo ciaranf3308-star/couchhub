@@ -1,4 +1,4 @@
-# CouchHub v0.2 — Deployment Handoff for Codex
+# CouchHub v0.3 — Deployment Handoff for Codex
 
 **For:** Codex (installation agent on the real Windows mini PC)
 **Hardware:** MINISFORUM UM790 Pro, Ryzen 9 7940HS, Radeon 780M, 32 GB,
@@ -141,6 +141,12 @@ by editing the registry or replacing the shell.
   target; the example is a clearly-marked placeholder.
 - Return home is explicit, not automatic on process exit — by design,
   so Steam-style short-lived launchers are not mistaken for the app exiting.
+- Themes: v0.3 adds a Bedroom theme (deep wine burgundy, beige bright)
+  alongside Hotel (brass, warm charcoal). Bedroom is the default; the
+  user can switch in Settings, it applies on next launch. Both themes
+  are whole dictionaries (`ThemeBedroom.xaml` / `Theme.xaml`) with
+  identical keys — if you add a brush to one, add it to the other.
+  The theme has **not** been seen rendered — judge it on the TV.
 - The tray icon uses `System.Drawing.SystemIcons.Application` as its
   icon in v0.1; a branded CouchHub icon can replace it later.
 

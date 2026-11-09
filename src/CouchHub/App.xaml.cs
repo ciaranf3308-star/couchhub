@@ -26,6 +26,22 @@ public partial class App : Application
     public InputService Input { get; private set; } = null!;
     public XInputService XInput { get; private set; } = null!;
 
+    /// <summary>
+    /// Loads the theme dictionary for the configured theme. Must run
+    /// before base.OnStartup: the StartupUri window is created inside
+    /// base.OnStartup, and its StaticResource references resolve then.
+    /// Hotel and Bedroom define exactly the same keys (see Theme.xaml).
+    /// </summary>
+    private void ApplyTheme(string theme)
+    {
+        string file = theme == "Hotel" ? "Theme.xaml" : "ThemeBedroom.xaml";
+        Resources.MergedDictionaries.Clear();
+        Resources.MergedDictionaries.Add(new ResourceDictionary
+        {
+            Source = new Uri(file, UriKind.Relative)
+        });
+    }
+
     protected override void OnStartup(StartupEventArgs e)
     {
         // Single instance: a second launch exits silently. The already
@@ -39,10 +55,11 @@ public partial class App : Application
         }
 
         Logger.PruneOldLogs();
-        Logger.Info("CouchHub 0.2.0 starting.");
+        Logger.Info("CouchHub 0.3.0 starting.");
         Config = ConfigService.Load();
         if (Config.RecoveredFromMalformedFile)
             Logger.Warn("Config was malformed and was recovered with defaults.");
+        ApplyTheme(Config.Theme);
 
         XInput = new XInputService();
         Input = new InputService(XInput);

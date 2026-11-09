@@ -5,7 +5,11 @@
        No cold blue-black, no tech-dashboard blue, no chunky borders.
        Hairlines, serif display type, soft brass focus glow.
        Every colour / size used by the dashboard and settings lives here,
-       so a future theme is a new ResourceDictionary. -->
+       so a future theme is a new ResourceDictionary.
+       CONTRACT: Theme.xaml (Hotel) and ThemeBedroom.xaml (Bedroom) must
+       define exactly the same keys — the app swaps the whole dictionary
+       at startup based on config, and every brush reference in the
+       windows resolves against whichever one is loaded. -->
   <Color x:Key="BackgroundColor">#171310</Color>
   <Color x:Key="BackgroundDeepColor">#100D0A</Color>
   <Color x:Key="SurfaceColor">#221B15</Color>

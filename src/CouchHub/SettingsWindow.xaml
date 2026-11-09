@@ -54,6 +54,15 @@
           <ComboBoxItem Content="200%" Tag="200" />
         </ComboBox>
       </StackPanel>
+      <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+        <TextBlock Text="Theme" FontSize="18" VerticalAlignment="Center" Margin="0,0,12,0" />
+        <ComboBox x:Name="ThemeCombo" FontSize="18" Width="340">
+          <ComboBoxItem Content="Bedroom — burgundy &amp; beige" Tag="Bedroom" />
+          <ComboBoxItem Content="Hotel — brass &amp; charcoal" Tag="Hotel" />
+        </ComboBox>
+      </StackPanel>
+      <TextBlock Text="Bedroom is burgundy dark with beige bright, to match the room. Hotel is the brass and charcoal look. Applies when CouchHub restarts."
+                 FontSize="16" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,8,0,0" />
       <CheckBox x:Name="StartupCheck" Content="Start CouchHub when Windows signs in" FontSize="18" Margin="0,10,0,0" />
       <TextBlock Text="Return-home shortcut" FontSize="18" Margin="0,12,0,0" />
       <TextBox x:Name="HotkeyBox" Style="{StaticResource SettingsTextBoxStyle}" />

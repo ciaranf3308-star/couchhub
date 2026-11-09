@@ -51,12 +51,12 @@
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
           <Viewbox Width="150" Height="100">
             <Grid Width="150" Height="100">
-              <Border Width="140" Height="72" CornerRadius="34" Background="#2C2318"
-                      BorderBrush="#C9A227" BorderThickness="2" HorizontalAlignment="Center" VerticalAlignment="Center" />
-              <Rectangle Width="18" Height="6" Fill="#F5EFE6" HorizontalAlignment="Left" Margin="28,0,0,0" VerticalAlignment="Center" />
-              <Rectangle Width="6" Height="18" Fill="#F5EFE6" HorizontalAlignment="Left" Margin="34,0,0,0" VerticalAlignment="Center" />
-              <Ellipse Width="16" Height="16" Fill="#D97B29" HorizontalAlignment="Right" Margin="0,0,30,0" VerticalAlignment="Center" />
-              <Ellipse Width="12" Height="12" Fill="#F5EFE6" HorizontalAlignment="Right" Margin="0,0,52,0" VerticalAlignment="Center" />
+              <Border Width="140" Height="72" CornerRadius="34" Background="{StaticResource SurfaceElevatedBrush}"
+                      BorderBrush="{StaticResource AccentBrush}" BorderThickness="2" HorizontalAlignment="Center" VerticalAlignment="Center" />
+              <Rectangle Width="18" Height="6" Fill="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Left" Margin="28,0,0,0" VerticalAlignment="Center" />
+              <Rectangle Width="6" Height="18" Fill="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Left" Margin="34,0,0,0" VerticalAlignment="Center" />
+              <Ellipse Width="16" Height="16" Fill="{StaticResource AccentWarmBrush}" HorizontalAlignment="Right" Margin="0,0,30,0" VerticalAlignment="Center" />
+              <Ellipse Width="12" Height="12" Fill="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Right" Margin="0,0,52,0" VerticalAlignment="Center" />
             </Grid>
           </Viewbox>
           <TextBlock Text="Gaming" FontSize="34" FontFamily="{StaticResource DisplayFont}"
@@ -71,10 +71,10 @@
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
           <Viewbox Width="150" Height="100">
             <Grid Width="150" Height="100">
-              <Border Width="132" Height="76" CornerRadius="8" Background="#2C2318"
-                      BorderBrush="#C9A227" BorderThickness="2" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,6,0,0" />
-              <Rectangle Width="44" Height="5" Fill="#C9A227" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,6,0,0" />
-              <Polygon Points="62,30 62,56 86,43" Fill="#D97B29" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,10,0,0" />
+              <Border Width="132" Height="76" CornerRadius="8" Background="{StaticResource SurfaceElevatedBrush}"
+                      BorderBrush="{StaticResource AccentBrush}" BorderThickness="2" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,6,0,0" />
+              <Rectangle Width="44" Height="5" Fill="{StaticResource AccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,6,0,0" />
+              <Polygon Points="62,30 62,56 86,43" Fill="{StaticResource AccentWarmBrush}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,10,0,0" />
             </Grid>
           </Viewbox>
           <TextBlock Text="TV" FontSize="34" FontFamily="{StaticResource DisplayFont}"
@@ -91,7 +91,7 @@
             <Grid Width="150" Height="100">
               <Border Width="132" Height="84" CornerRadius="18" Background="#C1272D"
                       HorizontalAlignment="Center" VerticalAlignment="Center" />
-              <Polygon Points="62,28 62,62 92,45" Fill="#F5EFE6" HorizontalAlignment="Center" VerticalAlignment="Center" />
+              <Polygon Points="62,28 62,62 92,45" Fill="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
             </Grid>
           </Viewbox>
           <TextBlock Text="YouTube" FontSize="34" FontFamily="{StaticResource DisplayFont}"
@@ -108,10 +108,10 @@
             <Grid Width="110" Height="100">
               <Grid.ColumnDefinitions><ColumnDefinition /><ColumnDefinition /></Grid.ColumnDefinitions>
               <Grid.RowDefinitions><RowDefinition /><RowDefinition /></Grid.RowDefinitions>
-              <Rectangle Grid.Row="0" Grid.Column="0" Fill="#F5EFE6" Margin="4" />
-              <Rectangle Grid.Row="0" Grid.Column="1" Fill="#F5EFE6" Margin="4" />
-              <Rectangle Grid.Row="1" Grid.Column="0" Fill="#F5EFE6" Margin="4" />
-              <Rectangle Grid.Row="1" Grid.Column="1" Fill="#C9A227" Margin="4" />
+              <Rectangle Grid.Row="0" Grid.Column="0" Fill="{StaticResource TextPrimaryBrush}" Margin="4" />
+              <Rectangle Grid.Row="0" Grid.Column="1" Fill="{StaticResource TextPrimaryBrush}" Margin="4" />
+              <Rectangle Grid.Row="1" Grid.Column="0" Fill="{StaticResource TextPrimaryBrush}" Margin="4" />
+              <Rectangle Grid.Row="1" Grid.Column="1" Fill="{StaticResource AccentBrush}" Margin="4" />
             </Grid>
           </Viewbox>
           <TextBlock Text="Windows" FontSize="34" FontFamily="{StaticResource DisplayFont}"

@@ -1,4 +1,4 @@
-# CouchHub v0.2 — Windows Living-Room Launcher
+# CouchHub v0.3 — Windows Living-Room Launcher
 
 A lightweight, native Windows entertainment dashboard for a MINISFORUM
 UM790 Pro mini PC connected to a TV. Power on, sign in, CouchHub appears
@@ -63,9 +63,19 @@ TV takes HotPlayer's Store target
 both are accepted by the launcher and by Settings validation.
 
 Settings (in-app, controller-navigable) cover: Gaming / TV / YouTube
-paths and arguments, fullscreen dashboard, display scaling
+paths and arguments, theme (Bedroom / Hotel), fullscreen dashboard, display scaling
 (System / 125% / 150% / 200%), startup at sign-in, return-home shortcut,
 controller status, and Exit.
+
+## Themes
+
+Two swappable palettes, same layout and type. **Bedroom** (default) is
+deep wine burgundy with beige bright, to match the bedroom. **Hotel** is
+the brass and warm charcoal boutique look. Both live as whole
+dictionaries (`ThemeBedroom.xaml` / `Theme.xaml`) defining exactly the
+same keys; the app loads the configured one at startup, before the
+dashboard is created. Tile icons use theme brushes, so the swap
+re-themes them too. Changing theme in Settings applies on next launch.
 
 - A malformed `config.json` is backed up (`config.json.corrupt-*.bak`)
   and defaults are used instead — CouchHub does not crash.

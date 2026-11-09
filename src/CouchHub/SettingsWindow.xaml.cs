@@ -41,6 +41,12 @@ public partial class SettingsWindow : Window
                 ScalingCombo.SelectedItem = item;
         }
         ScalingCombo.SelectedItem ??= ScalingCombo.Items[0];
+        foreach (ComboBoxItem item in ThemeCombo.Items)
+        {
+            if ((item.Tag as string) == _app.Config.Theme)
+                ThemeCombo.SelectedItem = item;
+        }
+        ThemeCombo.SelectedItem ??= ThemeCombo.Items[0];
 
         _controllerTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
         _controllerTimer.Tick += (_, _) => RefreshControllerStatus();
@@ -167,6 +173,8 @@ public partial class SettingsWindow : Window
         _app.Config.YouTube.Arguments = YouTubeArgsBox.Text.Trim();
         _app.Config.FullscreenDashboard = FullscreenCheck.IsChecked == true;
         _app.Config.ScalingMode = ((ComboBoxItem?)ScalingCombo.SelectedItem)?.Tag as string ?? "System";
+        string theme = ((ComboBoxItem?)ThemeCombo.SelectedItem)?.Tag as string ?? "Bedroom";
+        _app.Config.Theme = theme == "Hotel" ? "Hotel" : "Bedroom";
         _app.Config.ReturnHomeShortcut = string.IsNullOrWhiteSpace(HotkeyBox.Text)
             ? "Ctrl+Alt+Home" : HotkeyBox.Text.Trim();
 
