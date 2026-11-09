@@ -22,4 +22,13 @@
     <Copyright>Copyright (c) 2026</Copyright>
   </PropertyGroup>
 
+  <!-- UseWindowsForms adds an implicit "using System.Windows.Forms;"
+       which collides with the WPF names (Application, Button, TextBox,
+       KeyEventArgs). WinForms is only used for the tray NotifyIcon and
+       every Forms type there is fully qualified, so drop the implicit
+       using and keep the WPF names unambiguous. -->
+  <ItemGroup>
+    <Using Remove="System.Windows.Forms" />
+  </ItemGroup>
+
 </Project>
