@@ -1,4 +1,4 @@
-# CouchHub v0.4 — Windows Living-Room Launcher
+# CouchHub v0.5 — Windows Living-Room Launcher
 
 A lightweight, native Windows entertainment dashboard for a MINISFORUM
 UM790 Pro mini PC connected to a TV. Power on, sign in, CouchHub appears
@@ -19,13 +19,17 @@ underneath; nothing about the shell is replaced.
 | Tile | Behaviour |
 | --- | --- |
 | **Gaming** | Launches ES-DE (configurable .exe path). Empty path → tile shows "Setup required". |
-| **TV** | Launches HotPlayer (Microsoft Store app) via its `shell:AppsFolder\…!App` target — see Configuration below. It has no .exe path. |
+| **TV** | Launches HotPlayer (Microsoft Store app) via its `shell:AppsFolder\…!App` target — see Configuration below. It has no .exe path. The tile also shows a live now / next guide for the configured channel (see "Live TV guide" below) — real data only, never a made-up schedule. |
 | **YouTube** | Launches FreeTube (configurable .exe path). |
 | **Windows** | Hides CouchHub to expose the normal desktop. Return with Ctrl+Alt+Home, the tray icon, or View+Menu held 2 s. |
 
 HotPlayer notes: it is already installed on the UM790 Pro and already
 plays the user's IPTV subscription — CouchHub only launches it, it never
-touches the subscription, and no IPTV credentials go in CouchHub.
+touches the subscription, and HotPlayer's subscription credentials never
+go in CouchHub. (The optional live-guide provider override in Settings
+is separate — see "Live TV guide" below; it stores provider credentials
+in the local `config.json` on the PC only, never logs them, and only
+ever sends them to the user's own provider.)
 HotPlayer currently needs a mouse to navigate inside the app;
 controller-to-mouse mapping is **not** in v0.1 (deferred polish, do not
 add it here). Return home from HotPlayer is via Ctrl+Alt+Home, View+Menu
@@ -64,9 +68,43 @@ TV takes HotPlayer's Store target
 both are accepted by the launcher and by Settings validation.
 
 Settings (in-app, controller-navigable) cover: Gaming / TV / YouTube
-paths and arguments, theme (Bedroom / Hotel), fullscreen dashboard, display scaling
+paths and arguments, live TV guide (feed, channel, optional provider
+override, test button), theme (Bedroom / Hotel), fullscreen dashboard, display scaling
 (System / 125% / 150% / 200%), startup at sign-in, return-home shortcut,
 controller status, update check, and Exit.
+
+## Live TV guide
+
+v0.5 shows real now / next / later programmes on the TV tile, with a
+progress bar for the current programme. The default source is a **free
+public XMLTV guide** (open-epg, Ireland file by default, RTÉ One) — no
+account, no credentials. CouchHub downloads the guide file on launch,
+caches it locally, and refreshes every 30 minutes. Settings can switch
+the guide (Ireland / United Kingdom) and the channel (picked from the
+guide file's own channel list), and has a "Test guide" button that shows
+what the guide actually returns.
+
+An **optional Xtream Codes override** in Settings lets the user's own
+IPTV provider supply the guide instead (server URL, username, password,
+channel name). When it is configured, the provider is tried first and
+the free guide is the fallback. The password is stored in the local
+`config.json` on the PC only, is never written to the log, and is only
+ever sent to the provider's own server — never put real credentials in
+`config.example.json` or in the source.
+
+If the guide cannot be downloaded or the channel has no data, the tile
+degrades honestly: the LIVE badge and channel name stay, the programme
+rows hide, and a small "Live guide unavailable right now" line shows.
+CouchHub never invents a programme name or time.
+
+## Look (v0.5)
+
+The dashboard is now photographic: each tile is full-bleed original
+art (compiled into the app — `src/CouchHub/Assets/Tiles/*.jpg`) under a
+theme scrim, with the focused tile getting a glowing border, soft glow
+and slight lift. Gaming has platform chips, YouTube a play overlay and
+a thumbnail strip, Windows an app-icon row, TV the live guide above.
+Both themes re-theme all of it — no tile colour is hardcoded.
 
 ## Updates
 
@@ -103,8 +141,11 @@ re-themes them too. Changing theme in Settings applies on next launch.
 
 - A malformed `config.json` is backed up (`config.json.corrupt-*.bak`)
   and defaults are used instead — CouchHub does not crash.
-- **Never store IPTV passwords or other credentials in CouchHub.**
-  Launch arguments are never written to the log.
+- **Credentials:** the only credentials CouchHub ever stores are the
+  optional live-guide provider ones (Settings → Live TV guide), kept in
+  the local `config.json` on the PC only, never in the example file or
+  the source, never written to the log, and only ever sent to the user's
+  own provider. Launch arguments are never written to the log either.
 
 Logs: `%LOCALAPPDATA%\CouchHub\logs\couchhub-YYYY-MM-DD.log`
 (old logs pruned after 14 days).
@@ -121,7 +162,7 @@ src/CouchHub/Theme.xaml           # centralised colours / styles — future them
 src/CouchHub/Config/             # AppConfig, ConfigService (JSON, safe recovery)
 src/CouchHub/Input/              # XInputService (dynamic XInput1_4 → 1_3 → 9_1_0), InputService
 src/CouchHub/Launcher/           # ProcessLauncher (validate, focus-existing, launch, maximise)
-src/CouchHub/Services/           # Logger, WindowHelper (Win32), StartupService (Startup-folder .lnk), UpdateService (Velopack auto-update)
+src/CouchHub/Services/           # Logger, WindowHelper (Win32), StartupService (Startup-folder .lnk), UpdateService (Velopack auto-update), EpgService (free XMLTV guide + optional Xtream override)
 ```
 
 Design choices worth knowing:

@@ -62,7 +62,7 @@ public partial class App : Application
         }
 
         Logger.PruneOldLogs();
-        Logger.Info("CouchHub 0.4.0 starting.");
+        Logger.Info("CouchHub 0.5.0 starting.");
         Config = ConfigService.Load();
         if (Config.RecoveredFromMalformedFile)
             Logger.Warn("Config was malformed and was recovered with defaults.");

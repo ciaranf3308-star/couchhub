@@ -38,6 +38,49 @@ public sealed class LaunchTarget
     public bool IsConfigured => !string.IsNullOrWhiteSpace(ExePath);
 }
 
+/// <summary>
+/// Live TV guide (v0.5). The DEFAULT source is a free public XMLTV
+/// guide (open-epg) — no account, no credentials: CouchHub downloads
+/// the Ireland or UK guide file, gunzips it and shows now / next / later
+/// for the chosen channel. The optional Xtream Codes override below lets
+/// the user's own IPTV provider supply the guide instead, when it is
+/// configured; the free guide is the fallback if the provider fails.
+/// The password is stored on this PC only, never logged, and only ever
+/// sent to the provider's own server.
+/// </summary>
+public sealed class EpgSettings
+{
+    public const string IrelandFeedUrl = "https://www.open-epg.com/files/ireland.xml.gz";
+    public const string UkFeedUrl = "https://www.open-epg.com/files/unitedkingdom.xml.gz";
+
+    /// <summary>XMLTV guide file URL (Ireland by default).</summary>
+    public string FeedUrl { get; set; } = IrelandFeedUrl;
+
+    /// <summary>XMLTV channel id, e.g. "RTÉOne.ie".</summary>
+    public string ChannelId { get; set; } = "RTÉOne.ie";
+
+    /// <summary>Display name for the channel, e.g. "RTÉ One".</summary>
+    public string ChannelName { get; set; } = "RTÉ One";
+
+    /// <summary>Optional Xtream Codes override: provider base URL, e.g. "http://provider:8080".</summary>
+    public string XtreamServerUrl { get; set; } = string.Empty;
+
+    /// <summary>Optional Xtream Codes override: provider username.</summary>
+    public string XtreamUsername { get; set; } = string.Empty;
+
+    /// <summary>Optional Xtream Codes override: provider password. Never logged.</summary>
+    public string XtreamPassword { get; set; } = string.Empty;
+
+    /// <summary>Optional Xtream Codes override: channel name as the provider lists it.</summary>
+    public string XtreamChannelName { get; set; } = "RTÉ One";
+
+    [JsonIgnore]
+    public bool XtreamConfigured =>
+        !string.IsNullOrWhiteSpace(XtreamServerUrl) &&
+        !string.IsNullOrWhiteSpace(XtreamUsername) &&
+        !string.IsNullOrWhiteSpace(XtreamPassword);
+}
+
 /// <summary>Whole-file configuration, stored as JSON (see ConfigService).</summary>
 public sealed class AppConfig
 {
@@ -71,6 +114,9 @@ public sealed class AppConfig
         FullscreenPreferred = true,
         HideOnLaunch = true
     };
+
+    /// <summary>Live TV guide: free XMLTV file by default, optional Xtream override.</summary>
+    public EpgSettings Epg { get; set; } = new();
 
     /// <summary>Start CouchHub fullscreen (borderless, maximised).</summary>
     public bool FullscreenDashboard { get; set; } = true;

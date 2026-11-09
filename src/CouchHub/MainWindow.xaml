@@ -29,6 +29,8 @@
                    Foreground="{StaticResource BrassSoftBrush}" />
         <TextBlock Text="CouchHub" FontSize="46" FontFamily="{StaticResource DisplayFont}"
                    Foreground="{StaticResource TextPrimaryBrush}" Margin="0,2,0,0" />
+        <TextBlock Text="Y O U R   L I V I N G - R O O M   L A U N C H E R" FontSize="14"
+                   Foreground="{StaticResource TextSecondaryBrush}" Margin="0,4,0,0" />
       </StackPanel>
       <StackPanel Grid.Column="1" Orientation="Vertical" HorizontalAlignment="Right"
                   VerticalAlignment="Center" Margin="0,0,24,0">
@@ -41,88 +43,267 @@
               Style="{StaticResource ChromeButtonStyle}" Click="SettingsButton_Click" />
     </Grid>
 
-    <!-- Brass hairline under the header. -->
+    <!-- Hairline under the header. -->
     <Border Grid.Row="1" Height="1" Background="{StaticResource HairlineBrush}" Margin="14,6,14,10" />
 
-    <!-- Four tiles, one row. Viewbox icons are vector shapes, no images. -->
+    <!-- Four hero tiles: full-bleed photographic art with a theme scrim
+         over the lower half for legibility. The art is the tile's
+         Background (ImageBrush, UniformToFill); the template never paints
+         over it — focus only adds the glowing border, glow and lift. -->
     <UniformGrid Grid.Row="2" Columns="4" Rows="1">
+
+      <!-- Gaming -->
       <Button x:Name="GamingTile" Tag="0" Style="{StaticResource TileButtonStyle}"
+              Background="{StaticResource GamingTileArtBrush}"
               Click="Tile_Click" GotFocus="Tile_GotFocus">
-        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-          <Viewbox Width="150" Height="100">
-            <Grid Width="150" Height="100">
-              <Border Width="140" Height="72" CornerRadius="34" Background="{StaticResource SurfaceElevatedBrush}"
-                      BorderBrush="{StaticResource AccentBrush}" BorderThickness="2" HorizontalAlignment="Center" VerticalAlignment="Center" />
-              <Rectangle Width="18" Height="6" Fill="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Left" Margin="28,0,0,0" VerticalAlignment="Center" />
-              <Rectangle Width="6" Height="18" Fill="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Left" Margin="34,0,0,0" VerticalAlignment="Center" />
-              <Ellipse Width="16" Height="16" Fill="{StaticResource AccentWarmBrush}" HorizontalAlignment="Right" Margin="0,0,30,0" VerticalAlignment="Center" />
-              <Ellipse Width="12" Height="12" Fill="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Right" Margin="0,0,52,0" VerticalAlignment="Center" />
-            </Grid>
-          </Viewbox>
-          <TextBlock Text="Gaming" FontSize="34" FontFamily="{StaticResource DisplayFont}"
-                     HorizontalAlignment="Center" Margin="0,16,0,0" />
-          <TextBlock x:Name="GamingSubtitle" Text="ES-DE" FontSize="16"
-                     Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Center" Margin="0,6,0,0" />
-        </StackPanel>
+        <Grid>
+          <Border Background="{StaticResource TileScrimBrush}" CornerRadius="14" />
+          <Grid Margin="22,20,22,22">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto" />
+              <RowDefinition Height="*" />
+              <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Border x:Name="GamingSetupBadge" Grid.Row="0" HorizontalAlignment="Right"
+                    Background="{StaticResource TileChipBrush}" BorderBrush="{StaticResource AccentWarmBrush}"
+                    BorderThickness="1" CornerRadius="10" Padding="10,5" Visibility="Collapsed">
+              <TextBlock Text="SETUP REQUIRED" FontSize="13" Foreground="{StaticResource AccentWarmBrush}" />
+            </Border>
+            <StackPanel Grid.Row="2">
+              <Viewbox Width="84" Height="56" HorizontalAlignment="Left">
+                <Grid Width="150" Height="100">
+                  <Border Width="140" Height="72" CornerRadius="34" Background="{StaticResource TileChipBrush}"
+                          BorderBrush="{StaticResource TextPrimaryBrush}" BorderThickness="2" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                  <Rectangle Width="18" Height="6" Fill="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Left" Margin="28,0,0,0" VerticalAlignment="Center" />
+                  <Rectangle Width="6" Height="18" Fill="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Left" Margin="34,0,0,0" VerticalAlignment="Center" />
+                  <Ellipse Width="16" Height="16" Fill="{StaticResource AccentWarmBrush}" HorizontalAlignment="Right" Margin="0,0,30,0" VerticalAlignment="Center" />
+                  <Ellipse Width="12" Height="12" Fill="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Right" Margin="0,0,52,0" VerticalAlignment="Center" />
+                </Grid>
+              </Viewbox>
+              <TextBlock Text="Gaming" FontSize="36" FontFamily="{StaticResource DisplayFont}"
+                         Foreground="{StaticResource TextPrimaryBrush}" Margin="0,10,0,0" />
+              <TextBlock Text="C O N S O L E S   &amp;   G A M E S" FontSize="14"
+                         Foreground="{StaticResource TextSecondaryBrush}" Margin="0,4,0,0" />
+              <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
+                <Border Background="{StaticResource TileChipBrush}" BorderBrush="{StaticResource TileChipBorderBrush}"
+                        BorderThickness="1" CornerRadius="8" Padding="12,6" Margin="0,0,8,0">
+                  <TextBlock Text="Xbox" FontSize="15" Foreground="{StaticResource TextPrimaryBrush}" />
+                </Border>
+                <Border Background="{StaticResource TileChipBrush}" BorderBrush="{StaticResource TileChipBorderBrush}"
+                        BorderThickness="1" CornerRadius="8" Padding="12,6" Margin="0,0,8,0">
+                  <TextBlock Text="PlayStation" FontSize="15" Foreground="{StaticResource TextPrimaryBrush}" />
+                </Border>
+                <Border Background="{StaticResource TileChipBrush}" BorderBrush="{StaticResource TileChipBorderBrush}"
+                        BorderThickness="1" CornerRadius="8" Padding="12,6">
+                  <TextBlock Text="Switch" FontSize="15" Foreground="{StaticResource TextPrimaryBrush}" />
+                </Border>
+              </StackPanel>
+            </StackPanel>
+          </Grid>
+        </Grid>
       </Button>
 
+      <!-- TV: LIVE badge, now/next from the real guide (or nothing at
+           all when the guide is unavailable — never a made-up schedule). -->
       <Button x:Name="TvTile" Tag="1" Style="{StaticResource TileButtonStyle}"
+              Background="{StaticResource TvTileArtBrush}"
               Click="Tile_Click" GotFocus="Tile_GotFocus">
-        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-          <Viewbox Width="150" Height="100">
-            <Grid Width="150" Height="100">
-              <Border Width="132" Height="76" CornerRadius="8" Background="{StaticResource SurfaceElevatedBrush}"
-                      BorderBrush="{StaticResource AccentBrush}" BorderThickness="2" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,6,0,0" />
-              <Rectangle Width="44" Height="5" Fill="{StaticResource AccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,6,0,0" />
-              <Polygon Points="62,30 62,56 86,43" Fill="{StaticResource AccentWarmBrush}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,10,0,0" />
+        <Grid>
+          <Border Background="{StaticResource TileScrimBrush}" CornerRadius="14" />
+          <Grid Margin="22,20,22,22">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto" />
+              <RowDefinition Height="*" />
+              <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid Grid.Row="0">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+              </Grid.ColumnDefinitions>
+              <Border Background="{StaticResource TileChipBrush}" BorderBrush="{StaticResource TileChipBorderBrush}"
+                      BorderThickness="1" CornerRadius="10" Padding="10,5">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                  <Ellipse Width="10" Height="10" Fill="{StaticResource LiveBadgeBrush}" VerticalAlignment="Center" />
+                  <TextBlock Text="LIVE" FontSize="14" FontWeight="SemiBold"
+                             Foreground="{StaticResource TextPrimaryBrush}" Margin="7,0,0,0" VerticalAlignment="Center" />
+                </StackPanel>
+              </Border>
+              <Border x:Name="TvSetupBadge" Grid.Column="1" HorizontalAlignment="Right"
+                      Background="{StaticResource TileChipBrush}" BorderBrush="{StaticResource AccentWarmBrush}"
+                      BorderThickness="1" CornerRadius="10" Padding="10,5" Visibility="Collapsed">
+                <TextBlock Text="SETUP REQUIRED" FontSize="13" Foreground="{StaticResource AccentWarmBrush}" />
+              </Border>
             </Grid>
-          </Viewbox>
-          <TextBlock Text="TV" FontSize="34" FontFamily="{StaticResource DisplayFont}"
-                     HorizontalAlignment="Center" Margin="0,16,0,0" />
-          <TextBlock x:Name="TvSubtitle" Text="HotPlayer" FontSize="16"
-                     Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Center" Margin="0,6,0,0" />
-        </StackPanel>
+            <StackPanel Grid.Row="2">
+              <StackPanel x:Name="TvNowPanel" Visibility="Collapsed">
+                <TextBlock x:Name="TvNowTitle" Text="" FontSize="26" FontWeight="SemiBold"
+                           Foreground="{StaticResource TextPrimaryBrush}" TextWrapping="Wrap" MaxHeight="68" />
+                <TextBlock x:Name="TvNowMeta" Text="" FontSize="16"
+                           Foreground="{StaticResource TextSecondaryBrush}" Margin="0,4,0,0" />
+                <ProgressBar x:Name="TvNowProgress" Style="{StaticResource SlimProgressBarStyle}"
+                             Margin="0,10,0,0" Value="0" />
+              </StackPanel>
+              <Grid Margin="0,16,0,0">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="Auto" />
+                  <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Viewbox Grid.Column="0" Width="64" Height="48" VerticalAlignment="Center">
+                  <Grid Width="150" Height="100">
+                    <Border Width="132" Height="76" CornerRadius="8" Background="{StaticResource TileChipBrush}"
+                            BorderBrush="{StaticResource TextPrimaryBrush}" BorderThickness="2" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,6,0,0" />
+                    <Rectangle Width="44" Height="5" Fill="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,6,0,0" />
+                    <Polygon Points="62,30 62,56 86,43" Fill="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,10,0,0" />
+                  </Grid>
+                </Viewbox>
+                <StackPanel Grid.Column="1" Margin="14,0,0,0" VerticalAlignment="Center">
+                  <TextBlock Text="TV" FontSize="36" FontFamily="{StaticResource DisplayFont}"
+                             Foreground="{StaticResource TextPrimaryBrush}" />
+                  <TextBlock Text="LIVE TV, GUIDE &amp; APPS" FontSize="14"
+                             Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
+                </StackPanel>
+              </Grid>
+              <Border x:Name="TvGuidePanel" Background="{StaticResource TileChipBrush}"
+                      BorderBrush="{StaticResource TileChipBorderBrush}" BorderThickness="1"
+                      CornerRadius="10" Padding="12,10" Margin="0,14,0,0" Visibility="Collapsed">
+                <StackPanel>
+                  <Grid x:Name="TvNextRow">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="52" />
+                      <ColumnDefinition Width="62" />
+                      <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Next" FontSize="15" Foreground="{StaticResource AccentWarmBrush}" />
+                    <TextBlock x:Name="TvNextTime" Grid.Column="1" Text="" FontSize="15" Foreground="{StaticResource TextSecondaryBrush}" />
+                    <TextBlock x:Name="TvNextTitle" Grid.Column="2" Text="" FontSize="15" Foreground="{StaticResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis" />
+                  </Grid>
+                  <Grid x:Name="TvLaterRow" Margin="0,6,0,0">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="52" />
+                      <ColumnDefinition Width="62" />
+                      <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Later" FontSize="15" Foreground="{StaticResource AccentWarmBrush}" />
+                    <TextBlock x:Name="TvLaterTime" Grid.Column="1" Text="" FontSize="15" Foreground="{StaticResource TextSecondaryBrush}" />
+                    <TextBlock x:Name="TvLaterTitle" Grid.Column="2" Text="" FontSize="15" Foreground="{StaticResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis" />
+                  </Grid>
+                </StackPanel>
+              </Border>
+              <TextBlock x:Name="TvGuideHint" Text="Live guide unavailable right now" FontSize="15"
+                         Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap"
+                         Margin="0,14,0,0" Visibility="Collapsed" />
+            </StackPanel>
+          </Grid>
+        </Grid>
       </Button>
 
+      <!-- YouTube -->
       <Button x:Name="YouTubeTile" Tag="2" Style="{StaticResource TileButtonStyle}"
+              Background="{StaticResource YouTubeTileArtBrush}"
               Click="Tile_Click" GotFocus="Tile_GotFocus">
-        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-          <Viewbox Width="150" Height="100">
-            <Grid Width="150" Height="100">
-              <Border Width="132" Height="84" CornerRadius="18" Background="#C1272D"
-                      HorizontalAlignment="Center" VerticalAlignment="Center" />
-              <Polygon Points="62,28 62,62 92,45" Fill="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        <Grid>
+          <Border Background="{StaticResource TileScrimBrush}" CornerRadius="14" />
+          <Grid Margin="22,20,22,22">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto" />
+              <RowDefinition Height="*" />
+              <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Border x:Name="YouTubeSetupBadge" Grid.Row="0" HorizontalAlignment="Right"
+                    Background="{StaticResource TileChipBrush}" BorderBrush="{StaticResource AccentWarmBrush}"
+                    BorderThickness="1" CornerRadius="10" Padding="10,5" Visibility="Collapsed">
+              <TextBlock Text="SETUP REQUIRED" FontSize="13" Foreground="{StaticResource AccentWarmBrush}" />
+            </Border>
+            <Grid Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center">
+              <Ellipse Width="76" Height="76" Fill="{StaticResource TileChipBrush}"
+                       Stroke="{StaticResource TileChipBorderBrush}" StrokeThickness="1" />
+              <Polygon Points="30,24 30,52 54,38" Fill="{StaticResource TextPrimaryBrush}"
+                       HorizontalAlignment="Center" VerticalAlignment="Center" />
             </Grid>
-          </Viewbox>
-          <TextBlock Text="YouTube" FontSize="34" FontFamily="{StaticResource DisplayFont}"
-                     HorizontalAlignment="Center" Margin="0,16,0,0" />
-          <TextBlock x:Name="YouTubeSubtitle" Text="FreeTube" FontSize="16"
-                     Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Center" Margin="0,6,0,0" />
-        </StackPanel>
+            <StackPanel Grid.Row="2">
+              <StackPanel Orientation="Horizontal">
+                <Grid Width="64" Height="44">
+                  <Border Width="64" Height="44" CornerRadius="10" Background="{StaticResource YouTubeRedBrush}" />
+                  <Polygon Points="26,13 26,31 42,22" Fill="{StaticResource TextPrimaryBrush}"
+                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Grid>
+                <StackPanel Margin="14,0,0,0" VerticalAlignment="Center">
+                  <TextBlock Text="YouTube" FontSize="36" FontFamily="{StaticResource DisplayFont}"
+                             Foreground="{StaticResource TextPrimaryBrush}" />
+                  <TextBlock Text="VIDEOS, CHANNELS &amp; MORE" FontSize="14"
+                             Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
+                </StackPanel>
+              </StackPanel>
+              <UniformGrid Columns="3" Rows="1" Margin="0,14,0,0">
+                <Border Height="62" CornerRadius="8" Background="{StaticResource YouTubeThumbTopBrush}"
+                        BorderBrush="{StaticResource TileChipBorderBrush}" BorderThickness="1" Margin="0,0,8,0" />
+                <Border Height="62" CornerRadius="8" Background="{StaticResource YouTubeThumbMidBrush}"
+                        BorderBrush="{StaticResource TileChipBorderBrush}" BorderThickness="1" Margin="0,0,8,0" />
+                <Border Height="62" CornerRadius="8" Background="{StaticResource YouTubeThumbBottomBrush}"
+                        BorderBrush="{StaticResource TileChipBorderBrush}" BorderThickness="1" />
+              </UniformGrid>
+            </StackPanel>
+          </Grid>
+        </Grid>
       </Button>
 
+      <!-- Windows -->
       <Button x:Name="WindowsTile" Tag="3" Style="{StaticResource TileButtonStyle}"
+              Background="{StaticResource WindowsTileArtBrush}"
               Click="Tile_Click" GotFocus="Tile_GotFocus">
-        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-          <Viewbox Width="110" Height="100">
-            <Grid Width="110" Height="100">
-              <Grid.ColumnDefinitions><ColumnDefinition /><ColumnDefinition /></Grid.ColumnDefinitions>
-              <Grid.RowDefinitions><RowDefinition /><RowDefinition /></Grid.RowDefinitions>
-              <Rectangle Grid.Row="0" Grid.Column="0" Fill="{StaticResource TextPrimaryBrush}" Margin="4" />
-              <Rectangle Grid.Row="0" Grid.Column="1" Fill="{StaticResource TextPrimaryBrush}" Margin="4" />
-              <Rectangle Grid.Row="1" Grid.Column="0" Fill="{StaticResource TextPrimaryBrush}" Margin="4" />
-              <Rectangle Grid.Row="1" Grid.Column="1" Fill="{StaticResource AccentBrush}" Margin="4" />
-            </Grid>
-          </Viewbox>
-          <TextBlock Text="Windows" FontSize="34" FontFamily="{StaticResource DisplayFont}"
-                     HorizontalAlignment="Center" Margin="0,16,0,0" />
-          <TextBlock x:Name="WindowsSubtitle" Text="Desktop" FontSize="16"
-                     Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Center" Margin="0,6,0,0" />
-        </StackPanel>
+        <Grid>
+          <Border Background="{StaticResource TileScrimBrush}" CornerRadius="14" />
+          <Grid Margin="22,20,22,22">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto" />
+              <RowDefinition Height="*" />
+              <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <StackPanel Grid.Row="2">
+              <StackPanel Orientation="Horizontal">
+                <Viewbox Width="56" Height="56" VerticalAlignment="Center">
+                  <Grid Width="110" Height="100">
+                    <Grid.ColumnDefinitions><ColumnDefinition /><ColumnDefinition /></Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions><RowDefinition /><RowDefinition /></Grid.RowDefinitions>
+                    <Rectangle Grid.Row="0" Grid.Column="0" Fill="{StaticResource TextPrimaryBrush}" Margin="4" />
+                    <Rectangle Grid.Row="0" Grid.Column="1" Fill="{StaticResource TextPrimaryBrush}" Margin="4" />
+                    <Rectangle Grid.Row="1" Grid.Column="0" Fill="{StaticResource TextPrimaryBrush}" Margin="4" />
+                    <Rectangle Grid.Row="1" Grid.Column="1" Fill="{StaticResource AccentBrush}" Margin="4" />
+                  </Grid>
+                </Viewbox>
+                <StackPanel Margin="14,0,0,0" VerticalAlignment="Center">
+                  <TextBlock Text="Windows" FontSize="36" FontFamily="{StaticResource DisplayFont}"
+                             Foreground="{StaticResource TextPrimaryBrush}" />
+                  <TextBlock Text="DESKTOP &amp; PRODUCTIVITY" FontSize="14"
+                             Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
+                </StackPanel>
+              </StackPanel>
+              <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
+                <Border Width="36" Height="36" CornerRadius="8" Background="{StaticResource EdgeBrush}" Margin="0,0,8,0">
+                  <TextBlock Text="e" FontSize="18" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}"
+                             HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+                <Border Width="36" Height="36" CornerRadius="8" Background="{StaticResource WordBrush}" Margin="0,0,8,0">
+                  <TextBlock Text="W" FontSize="18" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}"
+                             HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+                <Border Width="36" Height="36" CornerRadius="8" Background="{StaticResource ExcelBrush}" Margin="0,0,8,0">
+                  <TextBlock Text="X" FontSize="18" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}"
+                             HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+                <Border Width="36" Height="36" CornerRadius="8" Background="{StaticResource PowerPointBrush}">
+                  <TextBlock Text="P" FontSize="18" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}"
+                             HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+              </StackPanel>
+            </StackPanel>
+          </Grid>
+        </Grid>
       </Button>
     </UniformGrid>
 
-    <!-- Footer: status line + input hints, under a brass hairline. -->
+    <!-- Footer: controller status left, input hints right. -->
     <Grid Grid.Row="3" Margin="14,12,14,0">
       <Grid.RowDefinitions>
         <RowDefinition Height="Auto" />
@@ -134,11 +315,52 @@
           <ColumnDefinition Width="*" />
           <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
-        <TextBlock x:Name="StatusText" Grid.Column="0" Text="" FontSize="17"
-                   Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center"
-                   TextWrapping="Wrap" />
-        <TextBlock Grid.Column="1" Text="A / Enter  Select    B / Esc  Back    Menu  Settings    Ctrl+Alt+Home  Return home"
-                   FontSize="16" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+          <Viewbox Width="30" Height="20" VerticalAlignment="Center">
+            <Grid Width="30" Height="20">
+              <Border Width="28" Height="14" CornerRadius="7" Background="{StaticResource SurfaceElevatedBrush}"
+                      BorderBrush="{StaticResource AccentBrush}" BorderThickness="1" HorizontalAlignment="Center" VerticalAlignment="Center" />
+              <Rectangle Width="4" Height="1.5" Fill="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Left" Margin="6,0,0,0" VerticalAlignment="Center" />
+              <Rectangle Width="1.5" Height="4" Fill="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Left" Margin="7,0,0,0" VerticalAlignment="Center" />
+              <Ellipse Width="3" Height="3" Fill="{StaticResource AccentWarmBrush}" HorizontalAlignment="Right" Margin="0,0,6,0" VerticalAlignment="Center" />
+            </Grid>
+          </Viewbox>
+          <Ellipse x:Name="StatusDot" Width="10" Height="10" Fill="{StaticResource SuccessBrush}"
+                   Margin="10,0,0,0" VerticalAlignment="Center" />
+          <TextBlock x:Name="StatusText" Text="" FontSize="17"
+                     Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center"
+                     TextWrapping="Wrap" Margin="8,0,0,0" />
+        </StackPanel>
+        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+          <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="18,0,0,0">
+            <Border Width="26" Height="26" CornerRadius="13" BorderBrush="{StaticResource HairlineBrush}" BorderThickness="1">
+              <TextBlock Text="A" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}"
+                         HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Border>
+            <TextBlock Text="Select" FontSize="16" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="7,0,0,0" />
+          </StackPanel>
+          <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="18,0,0,0">
+            <Border Width="26" Height="26" CornerRadius="13" BorderBrush="{StaticResource HairlineBrush}" BorderThickness="1">
+              <TextBlock Text="B" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}"
+                         HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Border>
+            <TextBlock Text="Back" FontSize="16" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="7,0,0,0" />
+          </StackPanel>
+          <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="18,0,0,0">
+            <Border Width="26" Height="26" CornerRadius="13" BorderBrush="{StaticResource HairlineBrush}" BorderThickness="1">
+              <TextBlock Text="☰" FontSize="14" Foreground="{StaticResource TextPrimaryBrush}"
+                         HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Border>
+            <TextBlock Text="Settings" FontSize="16" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="7,0,0,0" />
+          </StackPanel>
+          <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="18,0,0,0">
+            <Border Width="26" Height="26" CornerRadius="13" BorderBrush="{StaticResource HairlineBrush}" BorderThickness="1">
+              <TextBlock Text="⌂" FontSize="14" Foreground="{StaticResource TextPrimaryBrush}"
+                         HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Border>
+            <TextBlock Text="Return Home" FontSize="16" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="7,0,0,0" />
+          </StackPanel>
+        </StackPanel>
       </Grid>
     </Grid>
   </Grid>

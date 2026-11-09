@@ -39,5 +39,22 @@
   "scalingMode": "System",
   "startAtSignIn": false,
   "returnHomeShortcut": "Ctrl+Alt+Home",
+  // Live TV guide (v0.5): free XMLTV guide by default — no account.
+  // "feedUrl" is the Ireland or UK guide file; "channelId" is the
+  // XMLTV id (e.g. "RTÉOne.ie", "BBCOneLondon.uk"). The optional
+  // Xtream override below uses your own IPTV provider's guide instead
+  // when all three are set. NEVER put real provider credentials in
+  // this example file — enter them in Settings on the PC, where they
+  // are stored in the real config.json only, never logged, and only
+  // ever sent to your own provider.
+  "epg": {
+    "feedUrl": "https://www.open-epg.com/files/ireland.xml.gz",
+    "channelId": "RTÉOne.ie",
+    "channelName": "RTÉ One",
+    "xtreamServerUrl": "",
+    "xtreamUsername": "",
+    "xtreamPassword": "",
+    "xtreamChannelName": "RTÉ One"
+  },
   "lastFocusedTile": 0
 }

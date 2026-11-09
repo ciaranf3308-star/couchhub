@@ -34,6 +34,42 @@
       <TextBlock Text="Launch arguments (optional — never put passwords here)" FontSize="16" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,8,0,0" />
       <TextBox x:Name="TvArgsBox" Style="{StaticResource SettingsTextBoxStyle}" />
 
+      <TextBlock Text="Live TV guide" FontSize="22" FontFamily="{StaticResource DisplayFont}" Margin="0,18,0,0" />
+      <TextBlock Text="Free guide from open-epg — no account needed. CouchHub downloads the Ireland or UK guide and shows now / next for the channel you pick on the TV tile."
+                 FontSize="16" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,6,0,0" />
+      <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+        <TextBlock Text="Guide" FontSize="18" VerticalAlignment="Center" Margin="0,0,12,0" />
+        <ComboBox x:Name="EpgFeedCombo" FontSize="18" Width="340" SelectionChanged="EpgFeedCombo_SelectionChanged">
+          <ComboBoxItem Content="Ireland" Tag="https://www.open-epg.com/files/ireland.xml.gz" />
+          <ComboBoxItem Content="United Kingdom" Tag="https://www.open-epg.com/files/unitedkingdom.xml.gz" />
+        </ComboBox>
+      </StackPanel>
+      <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+        <TextBlock Text="Channel" FontSize="18" VerticalAlignment="Center" Margin="0,0,12,0" />
+        <ComboBox x:Name="EpgChannelCombo" FontSize="18" Width="340" SelectionChanged="EpgChannelCombo_SelectionChanged" />
+        <Button Content="Refresh channels" Style="{StaticResource SettingsButtonStyle}" Click="EpgRefreshChannels_Click" Margin="12,0,0,0" />
+      </StackPanel>
+      <TextBlock Text="Picking a channel from the other guide switches the guide above to match."
+                 FontSize="16" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,8,0,0" />
+
+      <TextBlock Text="Provider guide (optional)" FontSize="18" Margin="0,14,0,0" />
+      <TextBlock Text="Use your own IPTV provider's guide instead of the free one (Xtream Codes). Credentials stay on this PC and are only ever sent to your provider. Leave blank to use the free guide."
+                 FontSize="16" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,6,0,0" />
+      <TextBlock Text="Provider server URL" FontSize="16" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,8,0,0" />
+      <TextBox x:Name="EpgXtreamServerBox" Style="{StaticResource SettingsTextBoxStyle}" />
+      <TextBlock Text="Provider username" FontSize="16" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,8,0,0" />
+      <TextBox x:Name="EpgXtreamUserBox" Style="{StaticResource SettingsTextBoxStyle}" />
+      <TextBlock Text="Provider password" FontSize="16" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,8,0,0" />
+      <PasswordBox x:Name="EpgXtreamPasswordBox" Style="{StaticResource SettingsPasswordBoxStyle}" />
+      <TextBlock Text="Provider channel name" FontSize="16" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,8,0,0" />
+      <TextBox x:Name="EpgXtreamChannelBox" Style="{StaticResource SettingsTextBoxStyle}" />
+
+      <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+        <Button x:Name="TestGuideButton" Content="Test guide" Style="{StaticResource SettingsButtonStyle}" Click="TestGuide_Click" />
+      </StackPanel>
+      <TextBlock x:Name="EpgTestStatusText" Text="" FontSize="17"
+                 Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,8,0,0" />
+
       <TextBlock Text="YouTube  (FreeTube)" FontSize="22" FontFamily="{StaticResource DisplayFont}" Margin="0,18,0,0" />
       <Grid>
         <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>

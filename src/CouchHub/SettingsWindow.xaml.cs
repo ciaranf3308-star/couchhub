@@ -20,6 +20,11 @@ public partial class SettingsWindow : Window
 {
     private readonly App _app;
     private readonly DispatcherTimer _controllerTimer;
+    private readonly EpgService _epgService = new();
+    private string _epgFeedUrl = EpgSettings.IrelandFeedUrl;
+    private string _epgChannelId = "RTÉOne.ie";
+    private string _epgChannelName = "RTÉ One";
+    private bool _populatingEpg;
 
     public SettingsWindow(App app)
     {
@@ -47,6 +52,18 @@ public partial class SettingsWindow : Window
                 ThemeCombo.SelectedItem = item;
         }
         ThemeCombo.SelectedItem ??= ThemeCombo.Items[0];
+
+        _epgFeedUrl = _app.Config.Epg.FeedUrl;
+        _epgChannelId = _app.Config.Epg.ChannelId;
+        _epgChannelName = _app.Config.Epg.ChannelName;
+        _populatingEpg = true;
+        SelectFeedCombo(_epgFeedUrl);
+        _populatingEpg = false;
+        EpgXtreamServerBox.Text = _app.Config.Epg.XtreamServerUrl;
+        EpgXtreamUserBox.Text = _app.Config.Epg.XtreamUsername;
+        EpgXtreamPasswordBox.Password = _app.Config.Epg.XtreamPassword;
+        EpgXtreamChannelBox.Text = _app.Config.Epg.XtreamChannelName;
+        _ = LoadEpgChannelsAsync();
 
         _controllerTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
         _controllerTimer.Tick += (_, _) => RefreshControllerStatus();
@@ -93,6 +110,134 @@ public partial class SettingsWindow : Window
             ? $"Controller connected ({_app.Input.XInputDll}). D-pad / stick to move, A to select, B to close."
             : $"No controller connected right now ({_app.Input.XInputDll} loaded). " +
               "Connect an Xbox controller and it will work without restarting CouchHub.";
+    }
+
+    // ----- Live TV guide -------------------------------------------------------
+
+    private void SelectFeedCombo(string url)
+    {
+        foreach (ComboBoxItem item in EpgFeedCombo.Items)
+        {
+            if (string.Equals((string?)item.Tag, url, StringComparison.OrdinalIgnoreCase))
+            {
+                EpgFeedCombo.SelectedItem = item;
+                return;
+            }
+        }
+        // A hand-edited config may hold a custom feed URL: keep it as a
+        // selectable item instead of silently dropping it.
+        var custom = new ComboBoxItem { Content = HostOf(url) + " (custom)", Tag = url };
+        EpgFeedCombo.Items.Add(custom);
+        EpgFeedCombo.SelectedItem = custom;
+    }
+
+    private static string HostOf(string url)
+    {
+        try { return new Uri(url).Host; }
+        catch { return url; }
+    }
+
+    private async Task LoadEpgChannelsAsync()
+    {
+        var channels = await _epgService.GetChannelsAsync(_epgFeedUrl);
+        if (channels.Count == 0) channels = EpgService.PresetChannels;
+        _populatingEpg = true;
+        EpgChannelCombo.Items.Clear();
+        foreach (var ch in channels)
+            EpgChannelCombo.Items.Add(new ComboBoxItem { Content = ch.Name, Tag = ch.Id });
+        // Keep the configured channel selectable even if this guide
+        // file does not list it (e.g. the feed was just switched).
+        bool found = false;
+        foreach (ComboBoxItem item in EpgChannelCombo.Items)
+        {
+            if (string.Equals((string?)item.Tag, _epgChannelId, StringComparison.OrdinalIgnoreCase))
+            {
+                EpgChannelCombo.SelectedItem = item;
+                found = true;
+                break;
+            }
+        }
+        if (!found)
+        {
+            var current = new ComboBoxItem { Content = _epgChannelName, Tag = _epgChannelId };
+            EpgChannelCombo.Items.Add(current);
+            EpgChannelCombo.SelectedItem = current;
+        }
+        var selected = (ComboBoxItem?)EpgChannelCombo.SelectedItem;
+        if (selected is not null)
+        {
+            _epgChannelId = (string)selected.Tag;
+            _epgChannelName = (string)selected.Content;
+        }
+        _populatingEpg = false;
+    }
+
+    private void EpgFeedCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_populatingEpg) return;
+        var item = (ComboBoxItem?)EpgFeedCombo.SelectedItem;
+        if (item?.Tag is not string url) return;
+        _epgFeedUrl = url;
+        _ = LoadEpgChannelsAsync();
+    }
+
+    private void EpgChannelCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_populatingEpg) return;
+        var item = (ComboBoxItem?)EpgChannelCombo.SelectedItem;
+        if (item is null) return;
+        _epgChannelId = (string)item.Tag;
+        _epgChannelName = (string)item.Content;
+        // A .uk channel needs the UK guide and a .ie channel the
+        // Ireland guide — switch the feed to match.
+        string wantFeed = _epgChannelId.EndsWith(".uk", StringComparison.OrdinalIgnoreCase)
+            ? EpgSettings.UkFeedUrl
+            : _epgChannelId.EndsWith(".ie", StringComparison.OrdinalIgnoreCase)
+                ? EpgSettings.IrelandFeedUrl
+                : _epgFeedUrl;
+        if (!string.Equals(wantFeed, _epgFeedUrl, StringComparison.OrdinalIgnoreCase))
+        {
+            _epgFeedUrl = wantFeed;
+            _populatingEpg = true;
+            SelectFeedCombo(_epgFeedUrl);
+            _populatingEpg = false;
+        }
+    }
+
+    private void EpgRefreshChannels_Click(object sender, RoutedEventArgs e) => _ = LoadEpgChannelsAsync();
+
+    private EpgSettings CurrentEpgSettings() => new()
+    {
+        FeedUrl = _epgFeedUrl,
+        ChannelId = _epgChannelId,
+        ChannelName = _epgChannelName,
+        XtreamServerUrl = EpgXtreamServerBox.Text.Trim(),
+        XtreamUsername = EpgXtreamUserBox.Text.Trim(),
+        XtreamPassword = EpgXtreamPasswordBox.Password,
+        XtreamChannelName = string.IsNullOrWhiteSpace(EpgXtreamChannelBox.Text)
+            ? _epgChannelName : EpgXtreamChannelBox.Text.Trim()
+    };
+
+    private async void TestGuide_Click(object sender, RoutedEventArgs e)
+    {
+        TestGuideButton.IsEnabled = false;
+        EpgTestStatusText.Text = "Checking the guide…";
+        try
+        {
+            var guide = await _epgService.GetGuideAsync(CurrentEpgSettings());
+            if (guide?.Now is not null)
+                EpgTestStatusText.Text = $"Found: {guide.Now.Title} on {guide.ChannelName} " +
+                    $"({guide.Now.StartUtc.ToLocalTime():HH:mm}–{guide.Now.EndUtc.ToLocalTime():HH:mm}), via {guide.Source}.";
+            else if (guide?.Next is not null)
+                EpgTestStatusText.Text = $"Nothing on right now — next is {guide.Next.Title} on {guide.ChannelName} " +
+                    $"at {guide.Next.StartUtc.ToLocalTime():HH:mm}, via {guide.Source}.";
+            else
+                EpgTestStatusText.Text = "No guide data for that channel — check the channel and guide, then try again.";
+        }
+        finally
+        {
+            TestGuideButton.IsEnabled = true;
+        }
     }
 
     // ----- Gamepad routing -------------------------------------------------------
@@ -190,6 +335,14 @@ public partial class SettingsWindow : Window
         _app.Config.Tv.Arguments = TvArgsBox.Text.Trim();
         _app.Config.YouTube.ExePath = YouTubePathBox.Text.Trim();
         _app.Config.YouTube.Arguments = YouTubeArgsBox.Text.Trim();
+        _app.Config.Epg.FeedUrl = _epgFeedUrl;
+        _app.Config.Epg.ChannelId = _epgChannelId;
+        _app.Config.Epg.ChannelName = _epgChannelName;
+        _app.Config.Epg.XtreamServerUrl = EpgXtreamServerBox.Text.Trim();
+        _app.Config.Epg.XtreamUsername = EpgXtreamUserBox.Text.Trim();
+        _app.Config.Epg.XtreamPassword = EpgXtreamPasswordBox.Password;
+        _app.Config.Epg.XtreamChannelName = string.IsNullOrWhiteSpace(EpgXtreamChannelBox.Text)
+            ? "RTÉ One" : EpgXtreamChannelBox.Text.Trim();
         _app.Config.FullscreenDashboard = FullscreenCheck.IsChecked == true;
         _app.Config.ScalingMode = ((ComboBoxItem?)ScalingCombo.SelectedItem)?.Tag as string ?? "System";
         string theme = ((ComboBoxItem?)ThemeCombo.SelectedItem)?.Tag as string ?? "Bedroom";

@@ -42,6 +42,29 @@
   <SolidColorBrush x:Key="DangerBrush" Color="{StaticResource DangerColor}" />
   <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColor}" />
 
+  <!-- Hero tiles (v0.5): scrim and chrome that sit on top of the tile
+       photography. The scrim is strongest at the bottom where the text
+       sits and fades to nearly clear at the top, so the art stays the
+       hero. Chip / track brushes are translucent so the photo shows
+       through. Brand colours (YouTube red, Edge/Word/Excel/PowerPoint)
+       are brand identity, not theme surfaces — they are the same in
+       both themes, but they live here so MainWindow.xaml has no
+       hardcoded colours at all. -->
+  <LinearGradientBrush x:Key="TileScrimBrush" StartPoint="0,0" EndPoint="0,1">
+    <GradientStop Color="#2614090C" Offset="0" />
+    <GradientStop Color="#661E0F13" Offset="0.45" />
+    <GradientStop Color="#E614090C" Offset="1" />
+  </LinearGradientBrush>
+  <SolidColorBrush x:Key="TileChipBrush" Color="#802C151B" />
+  <SolidColorBrush x:Key="TileChipBorderBrush" Color="#59F6EEE3" />
+  <SolidColorBrush x:Key="TileTrackBrush" Color="#59F6EEE3" />
+  <SolidColorBrush x:Key="LiveBadgeBrush" Color="#D33A2C" />
+  <SolidColorBrush x:Key="YouTubeRedBrush" Color="#C1272D" />
+  <SolidColorBrush x:Key="EdgeBrush" Color="#0F6CBD" />
+  <SolidColorBrush x:Key="WordBrush" Color="#2B579A" />
+  <SolidColorBrush x:Key="ExcelBrush" Color="#217346" />
+  <SolidColorBrush x:Key="PowerPointBrush" Color="#D24726" />
+
   <!-- Warm vertical wash behind the dashboard: deep charcoal at the
        bottom rising to a faintly lit warm charcoal at the top. -->
   <LinearGradientBrush x:Key="BackgroundGradientBrush" StartPoint="0,0" EndPoint="0,1">
@@ -55,9 +78,12 @@
        Georgia ships with Windows, so there is nothing to install. -->
   <FontFamily x:Key="DisplayFont">Georgia, serif</FontFamily>
 
-  <!-- Dashboard tile: warm surface, hairline border, generous radius.
-       Focus is unmistakable at 3 m: brass hairline turns to a 2 px brass
-       edge with a soft warm glow and a small lift. -->
+  <!-- Dashboard tile (v0.5): full-bleed photographic art — each tile
+       sets its own art ImageBrush as Background (see App.xaml). The
+       template never paints over the art: hover / focus only change the
+       border, the glow and the lift, so the photo stays visible. Focus
+       is unmistakable at 3 m: the hairline turns to a 2 px accent edge
+       with a soft warm glow and a small lift. -->
   <Style x:Key="TileButtonStyle" TargetType="Button">
     <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
     <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
@@ -68,6 +94,7 @@
     <Setter Property="Padding" Value="0" />
     <Setter Property="Focusable" Value="True" />
     <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="FocusVisualStyle" Value="{x:Null}" />
     <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
     <Setter Property="RenderTransform">
       <Setter.Value>
@@ -82,20 +109,18 @@
                   BorderBrush="{TemplateBinding BorderBrush}"
                   BorderThickness="{TemplateBinding BorderThickness}"
                   CornerRadius="14">
-            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+            <ContentPresenter HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
           </Border>
           <ControlTemplate.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-              <Setter TargetName="Root" Property="Background" Value="{StaticResource SurfaceElevatedBrush}" />
-              <Setter TargetName="Root" Property="BorderBrush" Value="{StaticResource HairlineBrush}" />
+              <Setter TargetName="Root" Property="BorderBrush" Value="{StaticResource BrassSoftBrush}" />
             </Trigger>
             <Trigger Property="IsFocused" Value="True">
-              <Setter TargetName="Root" Property="Background" Value="{StaticResource SurfaceElevatedBrush}" />
               <Setter TargetName="Root" Property="BorderBrush" Value="{StaticResource BrassBrush}" />
               <Setter TargetName="Root" Property="BorderThickness" Value="2" />
               <Setter TargetName="Root" Property="Effect">
                 <Setter.Value>
-                  <DropShadowEffect Color="#C14B5F" BlurRadius="32" ShadowDepth="0" Opacity="0.38" />
+                  <DropShadowEffect Color="#C14B5F" BlurRadius="32" ShadowDepth="0" Opacity="0.45" />
                 </Setter.Value>
               </Setter>
               <Setter Property="RenderTransform">
@@ -103,9 +128,6 @@
                   <ScaleTransform ScaleX="1.03" ScaleY="1.03" />
                 </Setter.Value>
               </Setter>
-            </Trigger>
-            <Trigger Property="IsPressed" Value="True">
-              <Setter TargetName="Root" Property="Background" Value="{StaticResource SurfaceElevatedBrush}" />
             </Trigger>
           </ControlTemplate.Triggers>
         </ControlTemplate>
@@ -159,6 +181,54 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="TextBox">
+          <Border Background="{TemplateBinding Background}"
+                  BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}"
+                  CornerRadius="8" Padding="{TemplateBinding Padding}">
+            <ScrollViewer x:Name="PART_ContentHost" />
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsFocused" Value="True">
+              <Setter Property="BorderBrush" Value="{StaticResource BrassBrush}" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- Slim progress bar for the TV tile's now/next progress.
+       The control sizes PART_Indicator itself from Value / Maximum,
+       so the template only draws the track and the fill. -->
+  <Style x:Key="SlimProgressBarStyle" TargetType="ProgressBar">
+    <Setter Property="Height" Value="6" />
+    <Setter Property="Minimum" Value="0" />
+    <Setter Property="Maximum" Value="100" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ProgressBar">
+          <Border x:Name="PART_Track" CornerRadius="3" Background="{StaticResource TileTrackBrush}">
+            <Border x:Name="PART_Indicator" CornerRadius="3" Background="{StaticResource AccentBrush}" HorizontalAlignment="Left" />
+          </Border>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- Password box for the optional Xtream guide credentials in
+       Settings — same look as SettingsTextBoxStyle, but the text is
+       masked. The password is never logged anywhere. -->
+  <Style x:Key="SettingsPasswordBoxStyle" TargetType="PasswordBox">
+    <Setter Property="Background" Value="{StaticResource SurfaceElevatedBrush}" />
+    <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+    <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="FontSize" Value="18" />
+    <Setter Property="Padding" Value="12,9" />
+    <Setter Property="Margin" Value="0,4,0,4" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="PasswordBox">
           <Border Background="{TemplateBinding Background}"
                   BorderBrush="{TemplateBinding BorderBrush}"
                   BorderThickness="{TemplateBinding BorderThickness}"

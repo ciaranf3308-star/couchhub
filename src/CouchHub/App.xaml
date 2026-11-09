@@ -5,4 +5,20 @@
   <!-- No theme merged here on purpose: App.OnStartup loads Theme.xaml
        (Hotel) or ThemeBedroom.xaml (Bedroom) from config before the
        StartupUri window is created. See App.xaml.cs ApplyTheme. -->
+  <Application.Resources>
+    <!-- Hero tile art (v0.5): original generated photography, compiled
+         into the assembly (see csproj Resource include). Theme-independent
+         — the same art in both themes — so it lives here, not in the
+         theme dictionaries. Tiles use these as their Background
+         (ImageBrush, UniformToFill crop) with a theme scrim over them. -->
+    <ImageBrush x:Key="GamingTileArtBrush" ImageSource="Assets/Tiles/gaming.jpg" Stretch="UniformToFill" />
+    <ImageBrush x:Key="TvTileArtBrush" ImageSource="Assets/Tiles/tv.jpg" Stretch="UniformToFill" />
+    <ImageBrush x:Key="YouTubeTileArtBrush" ImageSource="Assets/Tiles/youtube.jpg" Stretch="UniformToFill" />
+    <ImageBrush x:Key="WindowsTileArtBrush" ImageSource="Assets/Tiles/windows.jpg" Stretch="UniformToFill" />
+    <!-- YouTube thumbnail strip: three different crops of the same art
+         (top = peaks/sky, middle = lake, bottom = valley) as decoration. -->
+    <ImageBrush x:Key="YouTubeThumbTopBrush" ImageSource="Assets/Tiles/youtube.jpg" Stretch="UniformToFill" Viewbox="0,0,1,0.34" />
+    <ImageBrush x:Key="YouTubeThumbMidBrush" ImageSource="Assets/Tiles/youtube.jpg" Stretch="UniformToFill" Viewbox="0,0.33,1,0.34" />
+    <ImageBrush x:Key="YouTubeThumbBottomBrush" ImageSource="Assets/Tiles/youtube.jpg" Stretch="UniformToFill" Viewbox="0,0.66,1,0.34" />
+  </Application.Resources>
 </Application>

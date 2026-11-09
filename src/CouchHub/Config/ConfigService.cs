@@ -45,6 +45,13 @@ public sealed class ConfigService
             config.Gaming ??= new LaunchTarget { DisplayName = "Gaming" };
             config.Tv ??= new LaunchTarget { DisplayName = "TV" };
             config.YouTube ??= new LaunchTarget { DisplayName = "YouTube" };
+            config.Epg ??= new EpgSettings();
+            if (string.IsNullOrWhiteSpace(config.Epg.FeedUrl))
+                config.Epg.FeedUrl = EpgSettings.IrelandFeedUrl;
+            if (string.IsNullOrWhiteSpace(config.Epg.ChannelId))
+                config.Epg.ChannelId = "RTÉOne.ie";
+            if (string.IsNullOrWhiteSpace(config.Epg.ChannelName))
+                config.Epg.ChannelName = "RTÉ One";
             config.LastFocusedTile = Math.Clamp(config.LastFocusedTile, 0, 3);
             if (config.Theme != "Hotel" && config.Theme != "Bedroom")
                 config.Theme = "Bedroom";

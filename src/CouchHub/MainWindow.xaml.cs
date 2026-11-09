@@ -24,6 +24,8 @@ public partial class MainWindow : Window
     private readonly App _app;
     private readonly Button[] _tiles;
     private readonly DispatcherTimer _clockTimer;
+    private readonly DispatcherTimer _epgTimer;
+    private readonly EpgService _epgService = new();
     private readonly System.Windows.Forms.NotifyIcon _trayIcon;
 
     private int _selectedIndex;
@@ -41,6 +43,12 @@ public partial class MainWindow : Window
 
         _clockTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
         _clockTimer.Tick += (_, _) => UpdateClock();
+
+        // Live guide refreshes every 30 minutes while running (and once
+        // at startup, see OnLoaded). The service caches the guide file,
+        // so a refresh inside the window usually reads the local cache.
+        _epgTimer = new DispatcherTimer { Interval = TimeSpan.FromMinutes(30) };
+        _epgTimer.Tick += (_, _) => _ = RefreshEpgAsync();
 
         // Tray fallback: hidden CouchHub is always recoverable from here,
         // even if the hotkey is taken by another app.
@@ -63,9 +71,13 @@ public partial class MainWindow : Window
         _app.Input.OpenSettings += () => Dispatcher.BeginInvoke(OpenSettings);
         _app.Input.ReturnHomeRequested += () => Dispatcher.BeginInvoke(ShowDashboard);
         _app.Input.ControllerPresenceChanged += connected =>
-            Dispatcher.BeginInvoke(() => UpdateStatus(connected
-                ? "Controller connected."
-                : "Controller disconnected. Keyboard and mouse still work."));
+            Dispatcher.BeginInvoke(() =>
+            {
+                UpdateControllerIndicator(connected);
+                UpdateStatus(connected
+                    ? "Controller ready"
+                    : "No controller detected. Keyboard and mouse work.");
+            });
 
         SystemEvents.DisplaySettingsChanged += (_, _) => ApplyWindowMode();
         Loaded += (_, _) => OnLoaded();
@@ -80,13 +92,19 @@ public partial class MainWindow : Window
         UpdateClock();
         _clockTimer.Start();
         FocusSelectedTile();
+        UpdateControllerIndicator(_app.Input.IsControllerConnected);
+
+        // Live guide, fire-and-forget: the service never throws and the
+        // tile degrades to badge + channel name when it has no data.
+        _ = RefreshEpgAsync();
+        _epgTimer.Start();
 
         if (_app.Config.RecoveredFromMalformedFile)
             UpdateStatus("Your settings file was damaged, so CouchHub started with defaults. " +
                          "A backup of the damaged file was kept next to config.json.");
         else
             UpdateStatus(_app.Input.IsControllerConnected
-                ? "Controller connected."
+                ? "Controller ready"
                 : "No controller detected. Keyboard and mouse work.");
 
         RegisterReturnHomeHotkey();
@@ -95,6 +113,7 @@ public partial class MainWindow : Window
     private void Cleanup()
     {
         _clockTimer.Stop();
+        _epgTimer.Stop();
         _app.Config.LastFocusedTile = _selectedIndex;
         try { _app.ConfigService.Save(_app.Config); } catch { /* best effort */ }
         if (_hotkeyRegistered) WindowHelper.UnregisterHotkey(this, ReturnHomeHotkeyId);
@@ -150,19 +169,87 @@ public partial class MainWindow : Window
 
     private void RefreshTileSubtitles()
     {
-        GamingSubtitle.Text = _app.Config.Gaming.IsConfigured ? "ES-DE" : "Setup required";
-        TvSubtitle.Text = _app.Config.Tv.IsConfigured ? "HotPlayer" : "Setup required";
-        YouTubeSubtitle.Text = _app.Config.YouTube.IsConfigured ? "FreeTube" : "Setup required";
-        WindowsSubtitle.Text = "Desktop";
-        GamingSubtitle.Foreground = _app.Config.Gaming.IsConfigured
-            ? (System.Windows.Media.Brush)FindResource("TextSecondaryBrush")
+        // The tile subtitles are static descriptors ("CONSOLES & GAMES"
+        // etc.). An unconfigured launch target gets a SETUP REQUIRED
+        // badge on its tile instead — the tile still opens Settings.
+        GamingSetupBadge.Visibility = _app.Config.Gaming.IsConfigured
+            ? Visibility.Collapsed : Visibility.Visible;
+        TvSetupBadge.Visibility = _app.Config.Tv.IsConfigured
+            ? Visibility.Collapsed : Visibility.Visible;
+        YouTubeSetupBadge.Visibility = _app.Config.YouTube.IsConfigured
+            ? Visibility.Collapsed : Visibility.Visible;
+    }
+
+    private void UpdateControllerIndicator(bool connected)
+    {
+        StatusDot.Fill = connected
+            ? (System.Windows.Media.Brush)FindResource("SuccessBrush")
             : (System.Windows.Media.Brush)FindResource("AccentWarmBrush");
-        TvSubtitle.Foreground = _app.Config.Tv.IsConfigured
-            ? (System.Windows.Media.Brush)FindResource("TextSecondaryBrush")
-            : (System.Windows.Media.Brush)FindResource("AccentWarmBrush");
-        YouTubeSubtitle.Foreground = _app.Config.YouTube.IsConfigured
-            ? (System.Windows.Media.Brush)FindResource("TextSecondaryBrush")
-            : (System.Windows.Media.Brush)FindResource("AccentWarmBrush");
+    }
+
+    // ----- Live TV guide -------------------------------------------------------
+
+    private async Task RefreshEpgAsync()
+    {
+        EpgGuide? guide = null;
+        try
+        {
+            guide = await _epgService.GetGuideAsync(_app.Config.Epg);
+        }
+        catch (Exception ex)
+        {
+            // The guide must never take the dashboard down.
+            Logger.Warn($"Live guide refresh failed: {ex.GetType().Name}");
+        }
+        if (Dispatcher.HasShutdownStarted || Dispatcher.HasShutdownFinished) return;
+        Dispatcher.BeginInvoke(() => ApplyEpg(guide));
+    }
+
+    private void ApplyEpg(EpgGuide? guide)
+    {
+        if (guide is null)
+        {
+            TvNowPanel.Visibility = Visibility.Collapsed;
+            TvGuidePanel.Visibility = Visibility.Collapsed;
+            TvGuideHint.Visibility = Visibility.Visible;
+            return;
+        }
+
+        TvGuideHint.Visibility = Visibility.Collapsed;
+        if (guide.Now is not null)
+        {
+            TvNowPanel.Visibility = Visibility.Visible;
+            TvNowTitle.Text = guide.Now.Title;
+            TvNowMeta.Text = $"{guide.ChannelName}  ·  {guide.Now.StartUtc.ToLocalTime():HH:mm} – {guide.Now.EndUtc.ToLocalTime():HH:mm}";
+            double total = (guide.Now.EndUtc - guide.Now.StartUtc).TotalMinutes;
+            double elapsed = (DateTime.UtcNow - guide.Now.StartUtc).TotalMinutes;
+            TvNowProgress.Value = total > 0 ? Math.Clamp(elapsed / total * 100, 0, 100) : 0;
+        }
+        else
+        {
+            TvNowPanel.Visibility = Visibility.Collapsed;
+        }
+
+        if (guide.Next is not null)
+        {
+            TvGuidePanel.Visibility = Visibility.Visible;
+            TvNextTime.Text = guide.Next.StartUtc.ToLocalTime().ToString("HH:mm");
+            TvNextTitle.Text = guide.Next.Title;
+            if (guide.Later is not null)
+            {
+                TvLaterRow.Visibility = Visibility.Visible;
+                TvLaterTime.Text = guide.Later.StartUtc.ToLocalTime().ToString("HH:mm");
+                TvLaterTitle.Text = guide.Later.Title;
+            }
+            else
+            {
+                TvLaterRow.Visibility = Visibility.Collapsed;
+            }
+        }
+        else
+        {
+            TvGuidePanel.Visibility = Visibility.Collapsed;
+        }
     }
 
     private void FocusSelectedTile()
@@ -303,6 +390,7 @@ public partial class MainWindow : Window
             ApplyScaling();
             RefreshTileSubtitles();
             RegisterReturnHomeHotkey(); // shortcut text may have changed
+            _ = RefreshEpgAsync(); // guide feed / channel may have changed
         }
         FocusSelectedTile();
     }

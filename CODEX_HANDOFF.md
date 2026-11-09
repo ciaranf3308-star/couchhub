@@ -1,4 +1,4 @@
-# CouchHub v0.4 — Deployment Handoff for Codex
+# CouchHub v0.5 — Deployment Handoff for Codex
 
 **For:** Codex (installation agent on the real Windows mini PC)
 **Hardware:** MINISFORUM UM790 Pro, Ryzen 9 7940HS, Radeon 780M, 32 GB,
@@ -57,6 +57,13 @@ version — that is expected, not a crash. Config and logs live outside
 the versioned app folder (`%LOCALAPPDATA%\CouchHub\config.json` and
 `...\logs\`), so updates do not wipe settings.
 
+**v0.5 arrives the same way:** if v0.4 is already installed, the next
+launch stages v0.5 and the launch after that runs it — no reinstall
+needed. Verify the version in Settings ("Current version 0.5.0") and
+that the dashboard now shows photographic tiles. If you are installing
+fresh, use the `CouchHub-win-Setup.exe` from the feed as above (it is
+the v0.5 installer once CI has published it).
+
 ## 3. Configure the three launch targets
 
 Do this in CouchHub Settings (Menu button / Settings button), or by
@@ -67,7 +74,7 @@ so if a path below is wrong for the actual install, use the real one.
 | Tile | Expected target | Notes |
 | --- | --- | --- |
 | Gaming | ES-DE executable, e.g. `C:\ES-DE\ES-DE.exe` | Confirm the real install path on the PC. Leave arguments empty unless ES-DE needs them. |
-| TV | **HotPlayer (Microsoft Store app)** — already installed on this PC and already playing the user's IPTV subscription | HotPlayer has **no .exe path**. Do not guess one. Find its real Store target on the PC (see §3a below) and paste that into the TV field in Settings, or point the TV field at a `.lnk` shortcut to HotPlayer. The subscription lives **inside HotPlayer**, not in CouchHub. CouchHub stores no IPTV passwords or credentials — never put one in `config.json` or in launch arguments. |
+| TV | **HotPlayer (Microsoft Store app)** — already installed on this PC and already playing the user's IPTV subscription | HotPlayer has **no .exe path**. Do not guess one. Find its real Store target on the PC (see §3a below) and paste that into the TV field in Settings, or point the TV field at a `.lnk` shortcut to HotPlayer. The subscription lives **inside HotPlayer**, not in CouchHub. CouchHub stores no HotPlayer credentials — never put one in `config.json` or in launch arguments. The TV tile also shows a live now / next guide (§3b) — free, no setup needed. |
 | YouTube | FreeTube, e.g. `C:\FreeTube\FreeTube.exe` | Confirm the real install path on the PC (installer default is under `%LOCALAPPDATA%\Programs\FreeTube\` — paste the full absolute path). VPN / ad-blocking belongs to FreeTube or the network, not CouchHub. |
 
 Also confirm in Settings: fullscreen dashboard on, scaling = System
@@ -124,6 +131,30 @@ supported. Report which method you used.
   front, but whether the controller reaches CouchHub while HotPlayer
   has focus is untested — record the real result per method.
 
+## 3b. Live TV guide (v0.5 — no setup needed by default)
+
+The TV tile now shows the real now / next programmes for a channel,
+with a progress bar for the current programme. The default source is a
+**free public XMLTV guide** (open-epg, Ireland file, RTÉ One) — no
+account, no credentials, nothing to configure. CouchHub downloads the
+guide on launch, caches it, and refreshes every 30 minutes. It needs
+network access to `www.open-epg.com` from the mini PC; if that is
+blocked, the tile degrades honestly (LIVE badge stays, programme rows
+hide, "Live guide unavailable right now") — that is expected behaviour,
+not a bug, so do not work around it by inventing a schedule.
+
+- In Settings → "Live TV guide" you can switch the guide (Ireland /
+  United Kingdom) and the channel (picked from the guide file's own
+  channel list), and press **"Test guide"** to see what the guide
+  actually returns for the current settings.
+- The optional "Provider guide" fields (Xtream Codes server / username
+  / password / channel name) are **only** for using the user's own IPTV
+  provider's guide instead of the free one. Leave them blank unless the
+  user asks for the provider guide. If they are filled in, the password
+  lives in the local `config.json` on the PC only — never paste real
+  provider credentials anywhere else, never put them in the example
+  config, and check the log contains no password after testing.
+
 ## 4. Autostart (only after the app is validated)
 
 Leave autostart **off** until steps 2–3 and the checks in §5 pass.
@@ -139,6 +170,8 @@ by editing the registry or replacing the shell.
 - [ ] Keyboard: arrows / Enter / Esc work; mouse clicks work; no double-launch from one press.
 - [ ] Each tile launches its app; already-running app is focused, not duplicated; missing app shows a friendly error (test by temporarily pointing a tile at a non-existent path, then restore it).
 - [ ] **TV / HotPlayer specifically:** TV tile launches HotPlayer from the `shell:AppsFolder\…!App` target (or the `.lnk` fallback) — record which method was used and the real target string. Launching it a second time while it is running brings the existing window forward, not a second copy. HotPlayer still plays the existing subscription; mouse navigation inside HotPlayer works as before. Record whether it opens maximised, and if not, what you did in HotPlayer to maximise it.
+- [ ] **Live TV guide (v0.5):** the TV tile shows a real now programme (title + channel + time range + progress bar) and Next / Later rows that match the actual broadcast at the time you look — compare against the real TV guide, do not just confirm that text is present. In Settings → "Live TV guide", press "Test guide" and record what it returns. Switch the channel to BBC One London and confirm the guide switches to the UK file and shows BBC One programmes. If the guide shows nothing, check network access to `www.open-epg.com` first and record the log lines — do not fill in a schedule by hand.
+- [ ] **Hero look (v0.5):** the four tiles are photographic (hunter / talk-show stage / mountain lake / glass bloom), the focused tile has a glowing border + soft glow + slight lift, and the footer shows the controller status and the A / B / Menu / Home hints. Judge it at 3 m and record what looks off. Bedroom (burgundy) is the default; switch to Hotel in Settings and confirm it re-themes, then switch back.
 - [ ] Return home: Ctrl+Alt+Home from the desktop and from inside a launched app; tray icon double-click; View+Menu held 2 s. **Test all three from inside HotPlayer specifically**, as well as from ES-DE and FreeTube. **Note the honest limitation:** the View+Menu shortcut is polled by CouchHub and may not fire while a fullscreen game owns the controller exclusively. Record what actually happens per app/game — do not claim it works everywhere.
 - [ ] Windows tile: desktop is normal Explorer, apps work, CouchHub returns via hotkey/tray.
 - [ ] HDMI: unplug/replug the TV, confirm the dashboard reappears fullscreen on the right display.
@@ -172,6 +205,17 @@ by editing the registry or replacing the shell.
   are whole dictionaries (`ThemeBedroom.xaml` / `Theme.xaml`) with
   identical keys — if you add a brush to one, add it to the other.
   The theme has **not** been seen rendered — judge it on the TV.
+- Hero look: v0.5 replaces the flat icon tiles with full-bleed
+  photographic tiles (original generated art, compiled into the app).
+  The focused tile glows; the TV tile shows the live guide. None of
+  this has been seen rendered — judge it on the TV at 3 m.
+- Live guide: v0.5 shows real now / next / later from a free XMLTV
+  guide (open-epg Ireland, RTÉ One by default), refreshed every
+  30 minutes, cached locally. If it cannot download, the tile hides
+  the programme rows — that is by design, never a reason to invent
+  a schedule. The optional Xtream provider override is off by default;
+  its password lives in the local config.json only and must never
+  appear in a log — verify that after any provider test.
 - Updates: v0.4 adds Velopack auto-update (feed:
   `https://ciaranf3308-star.github.io/couchhub-updates/couchhub/releases.win.json`).
   Install via Setup.exe (§2) or the TV will not update itself. After
