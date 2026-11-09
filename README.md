@@ -1,4 +1,4 @@
-# CouchHub v0.3 — Windows Living-Room Launcher
+# CouchHub v0.4 — Windows Living-Room Launcher
 
 A lightweight, native Windows entertainment dashboard for a MINISFORUM
 UM790 Pro mini PC connected to a TV. Power on, sign in, CouchHub appears
@@ -9,8 +9,9 @@ underneath; nothing about the shell is replaced.
 > **Build status — read this first:** this project was authored on Linux,
 > where `dotnet` is not installed and WPF is Windows-only, so **compilation
 > has NOT been verified here**. The code targets .NET 10 WPF APIs only and
-> uses no third-party packages, but you must build it on Windows with the
-> .NET 10 SDK before calling it verified. See "Build" below and
+> uses one third-party package — Velopack, for the installer and
+> auto-updates (see "Updates" below) — but you must build it on Windows
+> with the .NET 10 SDK before calling it verified. See "Build" below and
 > `CODEX_HANDOFF.md` for what Codex must still test on the real hardware.
 
 ## What it does
@@ -65,7 +66,30 @@ both are accepted by the launcher and by Settings validation.
 Settings (in-app, controller-navigable) cover: Gaming / TV / YouTube
 paths and arguments, theme (Bedroom / Hotel), fullscreen dashboard, display scaling
 (System / 125% / 150% / 200%), startup at sign-in, return-home shortcut,
-controller status, and Exit.
+controller status, update check, and Exit.
+
+## Updates
+
+v0.4 adds silent auto-updates via Velopack. CI packs every push to
+`main` into an installer and publishes it to a public update feed
+([couchhub-updates](https://github.com/ciaranf3308-star/couchhub-updates),
+served by GitHub Pages) — the feed has to be public because the app on
+the TV downloads it without a GitHub login, while this source repo stays
+private.
+
+- **First install: run `CouchHub-Setup.exe`** (from the feed:
+  `https://ciaranf3308-star.github.io/couchhub-updates/couchhub/CouchHub-Setup.exe`).
+  Per-user install, no admin. That is the copy that updates itself.
+- On startup CouchHub checks the feed and, if a newer version is there,
+  downloads and stages it in the background. The staged update applies
+  the next time CouchHub launches — nothing restarts mid-session.
+- Settings has a manual "Check for updates" button with a status line
+  ("You're up to date" / "Update vX downloaded — applies on next launch").
+- The portable `publish\CouchHub\` folder does **not** auto-update — it is
+  a plain copy with no installer behind it, so it never checks the feed.
+- Updates only ship on a new version: CI refuses to publish if the feed
+  already has that version with different files — bump `<Version>` in
+  `src/CouchHub/CouchHub.csproj` before pushing a new release.
 
 ## Themes
 
@@ -97,7 +121,7 @@ src/CouchHub/Theme.xaml           # centralised colours / styles — future them
 src/CouchHub/Config/             # AppConfig, ConfigService (JSON, safe recovery)
 src/CouchHub/Input/              # XInputService (dynamic XInput1_4 → 1_3 → 9_1_0), InputService
 src/CouchHub/Launcher/           # ProcessLauncher (validate, focus-existing, launch, maximise)
-src/CouchHub/Services/           # Logger, WindowHelper (Win32), StartupService (Startup-folder .lnk)
+src/CouchHub/Services/           # Logger, WindowHelper (Win32), StartupService (Startup-folder .lnk), UpdateService (Velopack auto-update)
 ```
 
 Design choices worth knowing:
@@ -149,9 +173,11 @@ with empty launch targets; open Settings and point each tile at its app.
 
 Game library / cover scraping, recently-played tracking, any IPTV
 player or stream handling, YouTube downloading, VPN, remote apps,
-automatic updates, shell replacement, kiosk lockdown, and
+shell replacement, kiosk lockdown, and
 controller-to-mouse mapping (HotPlayer needs a mouse for now — deferred
 polish). CouchHub launches other apps; it does not become them.
+(Automatic updates were on this list until v0.4 added them — see
+"Updates" above.)
 
 ## Deployment
 

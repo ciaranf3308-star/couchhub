@@ -1,4 +1,4 @@
-# CouchHub v0.3 — Deployment Handoff for Codex
+# CouchHub v0.4 — Deployment Handoff for Codex
 
 **For:** Codex (installation agent on the real Windows mini PC)
 **Hardware:** MINISFORUM UM790 Pro, Ryzen 9 7940HS, Radeon 780M, 32 GB,
@@ -10,7 +10,9 @@ verification pass.
 
 ## 1. Build on Windows
 
-Prerequisite: .NET 10 SDK.
+Prerequisite: .NET 10 SDK. `dotnet build` restores one NuGet package
+(Velopack, for the installer + auto-updates) — the build machine needs
+network access to nuget.org for the first restore.
 
 ```powershell
 cd <repo root>
@@ -23,14 +25,37 @@ Publish output: `.\publish\CouchHub\` — a self-contained win-x64 folder.
 No trimming, no AOT, not single-file. If the build fails, fix the error
 there and report it back; do not silently swap frameworks or add packages.
 
-## 2. Install (portable, no admin)
+## 2. Install via Setup.exe (not the portable folder)
 
-1. Copy the whole `publish\CouchHub\` folder to the mini PC, e.g.
-   `C:\Apps\CouchHub\`. No installer, no admin rights needed.
-2. Run `CouchHub.exe` once. Confirm the dashboard appears fullscreen
-   with four tiles and the clock is correct.
-3. First run creates `%LOCALAPPDATA%\CouchHub\config.json` with empty
+v0.4 adds auto-updates, and **only the installed copy updates itself**.
+CI publishes `CouchHub-Setup.exe` to the public update feed on every
+push to `main`:
+
+1. Download `CouchHub-Setup.exe` from
+   `https://ciaranf3308-star.github.io/couchhub-updates/couchhub/CouchHub-Setup.exe`
+   (that URL also proves the feed is live). If it 404s, the feed publish
+   step in CI failed — report that back instead of installing the
+   portable folder.
+2. Run it. Per-user install to `%LOCALAPPDATA%\CouchHub\`, no admin.
+   It creates Start Menu / Desktop shortcuts; use those from now on.
+3. Run CouchHub once. Confirm the dashboard appears fullscreen with
+   four tiles and the clock is correct.
+4. First run creates `%LOCALAPPDATA%\CouchHub\config.json` with empty
    launch targets. Tiles will show "Setup required" until step 3.
+
+The portable `publish\CouchHub\` folder is still built by CI as an
+artifact, but it is **not** the install path any more: a portable copy
+never checks for updates, so installing it would silently opt the TV
+out of auto-updates. Only use it as a fallback if Setup.exe itself
+fails, and say so in the report.
+
+Updates after this install are automatic: CouchHub checks the feed on
+startup, stages a newer version in the background, and applies it on
+the next launch. Settings also has a manual "Check for updates" button.
+A staged update means the next launch briefly restarts into the new
+version — that is expected, not a crash. Config and logs live outside
+the versioned app folder (`%LOCALAPPDATA%\CouchHub\config.json` and
+`...\logs\`), so updates do not wipe settings.
 
 ## 3. Configure the three launch targets
 
@@ -147,6 +172,12 @@ by editing the registry or replacing the shell.
   are whole dictionaries (`ThemeBedroom.xaml` / `Theme.xaml`) with
   identical keys — if you add a brush to one, add it to the other.
   The theme has **not** been seen rendered — judge it on the TV.
+- Updates: v0.4 adds Velopack auto-update (feed:
+  `https://ciaranf3308-star.github.io/couchhub-updates/couchhub/releases.win.json`).
+  Install via Setup.exe (§2) or the TV will not update itself. After
+  any future push to `main`, the next CouchHub launch should pick the
+  new version up — verify the version in Settings ("Current version …")
+  after an update lands, and report it.
 - The tray icon uses `System.Drawing.SystemIcons.Application` as its
   icon in v0.1; a branded CouchHub icon can replace it later.
 

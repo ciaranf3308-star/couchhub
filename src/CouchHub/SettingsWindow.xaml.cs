@@ -51,6 +51,7 @@ public partial class SettingsWindow : Window
         _controllerTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
         _controllerTimer.Tick += (_, _) => RefreshControllerStatus();
         RefreshControllerStatus();
+        UpdateStatusText.Text = $"Current version {CurrentVersion}.";
         Loaded += (_, _) => _controllerTimer.Start();
         Closed += (_, _) =>
         {
@@ -60,6 +61,24 @@ public partial class SettingsWindow : Window
 
         SubscribeGamepad();
         GamingPathBox.Focus();
+    }
+
+    private static string CurrentVersion =>
+        typeof(App).Assembly.GetName().Version?.ToString(3) ?? "unknown";
+
+    private async void CheckUpdates_Click(object sender, RoutedEventArgs e)
+    {
+        CheckUpdatesButton.IsEnabled = false;
+        UpdateStatusText.Text = "Checking for updates…";
+        try
+        {
+            var result = await UpdateService.CheckForUpdatesAsync();
+            UpdateStatusText.Text = result.Message;
+        }
+        finally
+        {
+            CheckUpdatesButton.IsEnabled = true;
+        }
     }
 
     private void RefreshControllerStatus()

@@ -24,9 +24,91 @@ jobs:
       - name: Publish portable (self-contained win-x64)
         run: powershell -ExecutionPolicy Bypass -File .\publish.ps1
 
+      - name: Read version from csproj
+        id: version
+        shell: pwsh
+        run: |
+          [xml] $csproj = Get-Content .\src\CouchHub\CouchHub.csproj
+          $version = $csproj.Project.PropertyGroup | Where-Object { $_.Version } |
+            Select-Object -First 1 -ExpandProperty Version
+          if (-not $version) { throw 'No <Version> found in CouchHub.csproj.' }
+          "version=$version" >> $env:GITHUB_OUTPUT
+          Write-Host "Version: $version"
+
+      - name: Install vpk
+        # Pinned to the Velopack NuGet version in CouchHub.csproj —
+        # Velopack recommends the CLI and the library match.
+        run: dotnet tool install -g vpk --version 1.2.161
+
+      - name: Pack Velopack release
+        run: vpk pack -u CouchHub -v ${{ steps.version.outputs.version }} -p publish\CouchHub -e CouchHub.exe -o Releases
+
       - name: Upload portable build
         uses: actions/upload-artifact@v4
         with:
           name: CouchHub-win-x64
           path: publish\CouchHub\
           if-no-files-found: error
+
+      # The update feed lives in the public couchhub-updates repo
+      # (GitHub Pages), not in this private repo — the app on the TV
+      # downloads anonymously, so the feed must be public. Only pushes
+      # to main publish: PRs still run vpk pack above, to validate it.
+      - name: Check out update feed repo
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/checkout@v4
+        with:
+          repository: ciaranf3308-star/couchhub-updates
+          ssh-key: ${{ secrets.UPDATES_DEPLOY_KEY }}
+          path: couchhub-updates
+
+      - name: Publish update feed
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        shell: pwsh
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $feedDir = Join-Path $PWD 'couchhub-updates\couchhub'
+          New-Item -ItemType Directory -Force -Path $feedDir | Out-Null
+          $feedFile = Join-Path $feedDir 'releases.win.json'
+          $fullNupkg = Get-ChildItem Releases\*-full.nupkg | Select-Object -First 1
+          if (-not $fullNupkg) { throw 'No *-full.nupkg found in Releases/ — vpk pack did not produce one.' }
+
+          # Version guard: a version already on the feed must never be
+          # silently replaced by a rebuild. Same version + identical
+          # files = nothing to do; same version + different files = fail
+          # and tell the author to bump <Version> in CouchHub.csproj.
+          if (Test-Path $feedFile) {
+            $feed = Get-Content $feedFile -Raw | ConvertFrom-Json
+            $existing = @($feed.Assets) | Where-Object { $_.Version -eq $env:VERSION }
+            if ($existing) {
+              $published = Join-Path $feedDir $existing[0].FileName
+              $same = (Test-Path $published) -and
+                (Get-FileHash $published -Algorithm SHA256).Hash -eq
+                (Get-FileHash $fullNupkg.FullName -Algorithm SHA256).Hash
+              if ($same) {
+                Write-Host "Version $env:VERSION is already published with identical files — nothing to do."
+                exit 0
+              }
+              throw "Version $env:VERSION is already on the update feed with different files. " +
+                'Bump <Version> in src/CouchHub/CouchHub.csproj before pushing — ' +
+                'a published update must never be silently replaced.'
+            }
+          }
+
+          Copy-Item Releases\CouchHub-Setup.exe -Destination $feedDir -Force
+          Copy-Item Releases\*.nupkg -Destination $feedDir -Force
+          Copy-Item Releases\releases.win.json -Destination $feedDir -Force
+
+          Set-Location couchhub-updates
+          git config user.name 'CouchHub CI'
+          git config user.email 'couchhub-ci@users.noreply.github.com'
+          git add couchhub
+          if (-not (git status --porcelain)) {
+            Write-Host 'No changes to the update feed.'
+            exit 0
+          }
+          git commit -m "CouchHub $env:VERSION update feed"
+          git push
+          Write-Host "Published CouchHub $env:VERSION to the update feed."

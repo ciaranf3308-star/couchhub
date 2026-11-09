@@ -4,6 +4,7 @@ using CouchHub.Config;
 using CouchHub.Input;
 using CouchHub.Launcher;
 using CouchHub.Services;
+using Velopack;
 
 namespace CouchHub;
 
@@ -44,6 +45,12 @@ public partial class App : Application
 
     protected override void OnStartup(StartupEventArgs e)
     {
+        // Velopack first: handles install / update / uninstall hooks and
+        // applies any update staged by a previous session, then exits
+        // early for those cases. Must run before the single-instance
+        // mutex, or an update apply would trip over the running copy.
+        VelopackApp.Build().Run();
+
         // Single instance: a second launch exits silently. The already
         // running copy stays in charge of the hotkey and tray icon.
         _singleInstanceMutex = new Mutex(initiallyOwned: true, SingleInstanceMutexName, out bool createdNew);
@@ -55,7 +62,7 @@ public partial class App : Application
         }
 
         Logger.PruneOldLogs();
-        Logger.Info("CouchHub 0.3.0 starting.");
+        Logger.Info("CouchHub 0.4.0 starting.");
         Config = ConfigService.Load();
         if (Config.RecoveredFromMalformedFile)
             Logger.Warn("Config was malformed and was recovered with defaults.");
@@ -77,6 +84,12 @@ public partial class App : Application
             Logger.Error("Unhandled non-UI exception", args.ExceptionObject as Exception);
 
         base.OnStartup(e);
+
+        // Silent update check, fire-and-forget: stages any newer release
+        // in the background (it applies on the next launch) and never
+        // blocks the dashboard or crashes the app — UpdateService
+        // swallows every failure into the log.
+        _ = UpdateService.CheckForUpdatesAsync();
     }
 
     protected override void OnExit(ExitEventArgs e)

@@ -15,12 +15,18 @@
     <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
     <!-- No trimming / no AOT: WPF is not compatible with trimming in v0.1. -->
     <PublishTrimmed>false</PublishTrimmed>
-    <Version>0.3.0</Version>
-    <AssemblyVersion>0.3.0.0</AssemblyVersion>
-    <FileVersion>0.3.0.0</FileVersion>
+    <Version>0.4.0</Version>
+    <AssemblyVersion>0.4.0.0</AssemblyVersion>
+    <FileVersion>0.4.0.0</FileVersion>
     <Description>CouchHub — lightweight native Windows living-room launcher</Description>
     <Copyright>Copyright (c) 2026</Copyright>
   </PropertyGroup>
+
+  <!-- Velopack: installer + silent auto-updates from a static feed
+       (GitHub Pages). Pinned to the same version as the vpk CLI in CI. -->
+  <ItemGroup>
+    <PackageReference Include="Velopack" Version="1.2.161" />
+  </ItemGroup>
 
   <!-- UseWindowsForms adds an implicit "using System.Windows.Forms;"
        which collides with the WPF names (Application, Button, TextBox,
