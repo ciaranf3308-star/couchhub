@@ -74,6 +74,10 @@ jobs:
           $feedFile = Join-Path $feedDir 'releases.win.json'
           $fullNupkg = Get-ChildItem Releases\*-full.nupkg | Select-Object -First 1
           if (-not $fullNupkg) { throw 'No *-full.nupkg found in Releases/ — vpk pack did not produce one.' }
+          # vpk 1.2.161 names the installer {packId}-{channel}-Setup.exe,
+          # e.g. CouchHub-win-Setup.exe — glob it, do not hardcode it.
+          $setupExe = Get-ChildItem Releases\*-Setup.exe | Select-Object -First 1
+          if (-not $setupExe) { throw 'No *-Setup.exe found in Releases/ — vpk pack did not produce an installer.' }
 
           # Version guard: a version already on the feed must never be
           # silently replaced by a rebuild. Same version + identical
@@ -97,7 +101,7 @@ jobs:
             }
           }
 
-          Copy-Item Releases\CouchHub-Setup.exe -Destination $feedDir -Force
+          Copy-Item $setupExe.FullName -Destination $feedDir -Force
           Copy-Item Releases\*.nupkg -Destination $feedDir -Force
           Copy-Item Releases\releases.win.json -Destination $feedDir -Force
 

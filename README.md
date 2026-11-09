@@ -77,8 +77,8 @@ served by GitHub Pages) — the feed has to be public because the app on
 the TV downloads it without a GitHub login, while this source repo stays
 private.
 
-- **First install: run `CouchHub-Setup.exe`** (from the feed:
-  `https://ciaranf3308-star.github.io/couchhub-updates/couchhub/CouchHub-Setup.exe`).
+- **First install: run `CouchHub-win-Setup.exe`** (from the feed:
+  `https://ciaranf3308-star.github.io/couchhub-updates/couchhub/CouchHub-win-Setup.exe`).
   Per-user install, no admin. That is the copy that updates itself.
 - On startup CouchHub checks the feed and, if a newer version is there,
   downloads and stages it in the background. The staged update applies

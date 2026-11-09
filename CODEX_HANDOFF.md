@@ -28,11 +28,11 @@ there and report it back; do not silently swap frameworks or add packages.
 ## 2. Install via Setup.exe (not the portable folder)
 
 v0.4 adds auto-updates, and **only the installed copy updates itself**.
-CI publishes `CouchHub-Setup.exe` to the public update feed on every
+CI publishes `CouchHub-win-Setup.exe` to the public update feed on every
 push to `main`:
 
-1. Download `CouchHub-Setup.exe` from
-   `https://ciaranf3308-star.github.io/couchhub-updates/couchhub/CouchHub-Setup.exe`
+1. Download `CouchHub-win-Setup.exe` from
+   `https://ciaranf3308-star.github.io/couchhub-updates/couchhub/CouchHub-win-Setup.exe`
    (that URL also proves the feed is live). If it 404s, the feed publish
    step in CI failed — report that back instead of installing the
    portable folder.
