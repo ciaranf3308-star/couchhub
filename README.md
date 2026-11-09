@@ -1,4 +1,4 @@
-# CouchHub v0.1 — Windows Living-Room Launcher
+# CouchHub v0.2 — Windows Living-Room Launcher
 
 A lightweight, native Windows entertainment dashboard for a MINISFORUM
 UM790 Pro mini PC connected to a TV. Power on, sign in, CouchHub appears

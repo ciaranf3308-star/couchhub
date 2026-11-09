@@ -1,4 +1,4 @@
-# CouchHub v0.1 — Deployment Handoff for Codex
+# CouchHub v0.2 — Deployment Handoff for Codex
 
 **For:** Codex (installation agent on the real Windows mini PC)
 **Hardware:** MINISFORUM UM790 Pro, Ryzen 9 7940HS, Radeon 780M, 32 GB,

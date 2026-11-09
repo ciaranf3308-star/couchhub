@@ -10,11 +10,12 @@
         FontFamily="{StaticResource UiFont}">
   <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="32,24">
     <StackPanel>
-      <TextBlock Text="Settings" FontSize="34" FontWeight="Bold" Margin="0,0,0,4" />
+      <TextBlock Text="Settings" FontSize="36" FontFamily="{StaticResource DisplayFont}" Margin="0,0,0,4" />
+      <Border Height="1" Background="{StaticResource HairlineBrush}" Margin="0,0,0,14" />
       <TextBlock Text="Arrows move, Enter selects, Esc closes. Gamepad works too: D-pad to move, A to select, B to close."
                  FontSize="17" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,20" TextWrapping="Wrap" />
 
-      <TextBlock Text="Gaming  (ES-DE)" FontSize="22" FontWeight="SemiBold" />
+      <TextBlock Text="Gaming  (ES-DE)" FontSize="22" FontFamily="{StaticResource DisplayFont}" />
       <Grid>
         <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
         <TextBox x:Name="GamingPathBox" Grid.Column="0" Style="{StaticResource SettingsTextBoxStyle}" />
@@ -23,7 +24,7 @@
       <TextBlock Text="Launch arguments (optional — never put passwords here)" FontSize="16" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,8,0,0" />
       <TextBox x:Name="GamingArgsBox" Style="{StaticResource SettingsTextBoxStyle}" />
 
-      <TextBlock Text="TV  (HotPlayer)" FontSize="22" FontWeight="SemiBold" Margin="0,18,0,0" />
+      <TextBlock Text="TV  (HotPlayer)" FontSize="22" FontFamily="{StaticResource DisplayFont}" Margin="0,18,0,0" />
       <Grid>
         <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
         <TextBox x:Name="TvPathBox" Grid.Column="0" Style="{StaticResource SettingsTextBoxStyle}" />
@@ -33,7 +34,7 @@
       <TextBlock Text="Launch arguments (optional — never put passwords here)" FontSize="16" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,8,0,0" />
       <TextBox x:Name="TvArgsBox" Style="{StaticResource SettingsTextBoxStyle}" />
 
-      <TextBlock Text="YouTube  (FreeTube)" FontSize="22" FontWeight="SemiBold" Margin="0,18,0,0" />
+      <TextBlock Text="YouTube  (FreeTube)" FontSize="22" FontFamily="{StaticResource DisplayFont}" Margin="0,18,0,0" />
       <Grid>
         <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
         <TextBox x:Name="YouTubePathBox" Grid.Column="0" Style="{StaticResource SettingsTextBoxStyle}" />
@@ -42,7 +43,7 @@
       <TextBlock Text="Launch arguments (optional — never put passwords here)" FontSize="16" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,8,0,0" />
       <TextBox x:Name="YouTubeArgsBox" Style="{StaticResource SettingsTextBoxStyle}" />
 
-      <TextBlock Text="Dashboard" FontSize="22" FontWeight="SemiBold" Margin="0,22,0,6" />
+      <TextBlock Text="Dashboard" FontSize="22" FontFamily="{StaticResource DisplayFont}" Margin="0,22,0,6" />
       <CheckBox x:Name="FullscreenCheck" Content="Fullscreen dashboard" FontSize="18" Margin="0,4" />
       <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
         <TextBlock Text="Display scaling" FontSize="18" VerticalAlignment="Center" Margin="0,0,12,0" />
@@ -59,7 +60,7 @@
       <TextBlock Text="Example: Ctrl+Alt+Home. If another app already uses it, CouchHub will say so on the dashboard."
                  FontSize="16" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" />
 
-      <TextBlock Text="Controller" FontSize="22" FontWeight="SemiBold" Margin="0,22,0,6" />
+      <TextBlock Text="Controller" FontSize="22" FontFamily="{StaticResource DisplayFont}" Margin="0,22,0,6" />
       <TextBlock x:Name="ControllerStatusText" Text="Checking…" FontSize="18"
                  Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" />
 

@@ -5,29 +5,34 @@
         WindowStyle="None"
         WindowState="Maximized"
         ResizeMode="NoResize"
-        Background="{StaticResource BackgroundBrush}"
+        Background="{StaticResource BackgroundGradientBrush}"
         Foreground="{StaticResource TextPrimaryBrush}"
         FontFamily="{StaticResource UiFont}"
         ShowInTaskbar="True">
   <Grid x:Name="RootGrid" Margin="48,28,48,28">
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
       <RowDefinition Height="*" />
       <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
 
-    <!-- Header: brand, clock/date, settings. -->
+    <!-- Header: serif wordmark, clock/date, settings. -->
     <Grid Grid.Row="0" Margin="14,0,14,8">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="*" />
         <ColumnDefinition Width="Auto" />
         <ColumnDefinition Width="Auto" />
       </Grid.ColumnDefinitions>
-      <TextBlock Grid.Column="0" Text="COUCHHUB" FontSize="40" FontWeight="Bold"
-                 Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" />
+      <StackPanel Grid.Column="0" VerticalAlignment="Center">
+        <TextBlock Text="L I V I N G   R O O M" FontSize="14"
+                   Foreground="{StaticResource BrassSoftBrush}" />
+        <TextBlock Text="CouchHub" FontSize="46" FontFamily="{StaticResource DisplayFont}"
+                   Foreground="{StaticResource TextPrimaryBrush}" Margin="0,2,0,0" />
+      </StackPanel>
       <StackPanel Grid.Column="1" Orientation="Vertical" HorizontalAlignment="Right"
                   VerticalAlignment="Center" Margin="0,0,24,0">
-        <TextBlock x:Name="ClockText" Text="--:--" FontSize="36" FontWeight="SemiBold"
+        <TextBlock x:Name="ClockText" Text="--:--" FontSize="38" FontFamily="{StaticResource DisplayFont}"
                    HorizontalAlignment="Right" Foreground="{StaticResource TextPrimaryBrush}" />
         <TextBlock x:Name="DateText" Text="" FontSize="18"
                    HorizontalAlignment="Right" Foreground="{StaticResource TextSecondaryBrush}" />
@@ -36,24 +41,27 @@
               Style="{StaticResource ChromeButtonStyle}" Click="SettingsButton_Click" />
     </Grid>
 
+    <!-- Brass hairline under the header. -->
+    <Border Grid.Row="1" Height="1" Background="{StaticResource HairlineBrush}" Margin="14,6,14,10" />
+
     <!-- Four tiles, one row. Viewbox icons are vector shapes, no images. -->
-    <UniformGrid Grid.Row="1" Columns="4" Rows="1">
+    <UniformGrid Grid.Row="2" Columns="4" Rows="1">
       <Button x:Name="GamingTile" Tag="0" Style="{StaticResource TileButtonStyle}"
               Click="Tile_Click" GotFocus="Tile_GotFocus">
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
           <Viewbox Width="150" Height="100">
             <Grid Width="150" Height="100">
-              <Border Width="140" Height="72" CornerRadius="34" Background="#1E2534"
-                      BorderBrush="#00A6FF" BorderThickness="3" HorizontalAlignment="Center" VerticalAlignment="Center" />
-              <Rectangle Width="18" Height="6" Fill="#F2F5F9" HorizontalAlignment="Left" Margin="28,0,0,0" VerticalAlignment="Center" />
-              <Rectangle Width="6" Height="18" Fill="#F2F5F9" HorizontalAlignment="Left" Margin="34,0,0,0" VerticalAlignment="Center" />
-              <Ellipse Width="16" Height="16" Fill="#FF9F1C" HorizontalAlignment="Right" Margin="0,0,30,0" VerticalAlignment="Center" />
-              <Ellipse Width="12" Height="12" Fill="#F2F5F9" HorizontalAlignment="Right" Margin="0,0,52,0" VerticalAlignment="Center" />
+              <Border Width="140" Height="72" CornerRadius="34" Background="#2C2318"
+                      BorderBrush="#C9A227" BorderThickness="2" HorizontalAlignment="Center" VerticalAlignment="Center" />
+              <Rectangle Width="18" Height="6" Fill="#F5EFE6" HorizontalAlignment="Left" Margin="28,0,0,0" VerticalAlignment="Center" />
+              <Rectangle Width="6" Height="18" Fill="#F5EFE6" HorizontalAlignment="Left" Margin="34,0,0,0" VerticalAlignment="Center" />
+              <Ellipse Width="16" Height="16" Fill="#D97B29" HorizontalAlignment="Right" Margin="0,0,30,0" VerticalAlignment="Center" />
+              <Ellipse Width="12" Height="12" Fill="#F5EFE6" HorizontalAlignment="Right" Margin="0,0,52,0" VerticalAlignment="Center" />
             </Grid>
           </Viewbox>
-          <TextBlock Text="Gaming" FontSize="36" FontWeight="SemiBold"
+          <TextBlock Text="Gaming" FontSize="34" FontFamily="{StaticResource DisplayFont}"
                      HorizontalAlignment="Center" Margin="0,16,0,0" />
-          <TextBlock x:Name="GamingSubtitle" Text="ES-DE" FontSize="19"
+          <TextBlock x:Name="GamingSubtitle" Text="ES-DE" FontSize="16"
                      Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Center" Margin="0,6,0,0" />
         </StackPanel>
       </Button>
@@ -63,15 +71,15 @@
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
           <Viewbox Width="150" Height="100">
             <Grid Width="150" Height="100">
-              <Border Width="132" Height="76" CornerRadius="8" Background="#1E2534"
-                      BorderBrush="#00A6FF" BorderThickness="3" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,6,0,0" />
-              <Rectangle Width="44" Height="5" Fill="#00A6FF" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,6,0,0" />
-              <Polygon Points="62,30 62,56 86,43" Fill="#FF9F1C" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,10,0,0" />
+              <Border Width="132" Height="76" CornerRadius="8" Background="#2C2318"
+                      BorderBrush="#C9A227" BorderThickness="2" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,6,0,0" />
+              <Rectangle Width="44" Height="5" Fill="#C9A227" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,6,0,0" />
+              <Polygon Points="62,30 62,56 86,43" Fill="#D97B29" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,10,0,0" />
             </Grid>
           </Viewbox>
-          <TextBlock Text="TV" FontSize="36" FontWeight="SemiBold"
+          <TextBlock Text="TV" FontSize="34" FontFamily="{StaticResource DisplayFont}"
                      HorizontalAlignment="Center" Margin="0,16,0,0" />
-          <TextBlock x:Name="TvSubtitle" Text="HotPlayer" FontSize="19"
+          <TextBlock x:Name="TvSubtitle" Text="HotPlayer" FontSize="16"
                      Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Center" Margin="0,6,0,0" />
         </StackPanel>
       </Button>
@@ -81,14 +89,14 @@
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
           <Viewbox Width="150" Height="100">
             <Grid Width="150" Height="100">
-              <Border Width="132" Height="84" CornerRadius="18" Background="#E62117"
+              <Border Width="132" Height="84" CornerRadius="18" Background="#C1272D"
                       HorizontalAlignment="Center" VerticalAlignment="Center" />
-              <Polygon Points="62,28 62,62 92,45" Fill="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
+              <Polygon Points="62,28 62,62 92,45" Fill="#F5EFE6" HorizontalAlignment="Center" VerticalAlignment="Center" />
             </Grid>
           </Viewbox>
-          <TextBlock Text="YouTube" FontSize="36" FontWeight="SemiBold"
+          <TextBlock Text="YouTube" FontSize="34" FontFamily="{StaticResource DisplayFont}"
                      HorizontalAlignment="Center" Margin="0,16,0,0" />
-          <TextBlock x:Name="YouTubeSubtitle" Text="FreeTube" FontSize="19"
+          <TextBlock x:Name="YouTubeSubtitle" Text="FreeTube" FontSize="16"
                      Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Center" Margin="0,6,0,0" />
         </StackPanel>
       </Button>
@@ -100,31 +108,38 @@
             <Grid Width="110" Height="100">
               <Grid.ColumnDefinitions><ColumnDefinition /><ColumnDefinition /></Grid.ColumnDefinitions>
               <Grid.RowDefinitions><RowDefinition /><RowDefinition /></Grid.RowDefinitions>
-              <Rectangle Grid.Row="0" Grid.Column="0" Fill="#00A6FF" Margin="4" />
-              <Rectangle Grid.Row="0" Grid.Column="1" Fill="#00A6FF" Margin="4" />
-              <Rectangle Grid.Row="1" Grid.Column="0" Fill="#00A6FF" Margin="4" />
-              <Rectangle Grid.Row="1" Grid.Column="1" Fill="#FF9F1C" Margin="4" />
+              <Rectangle Grid.Row="0" Grid.Column="0" Fill="#F5EFE6" Margin="4" />
+              <Rectangle Grid.Row="0" Grid.Column="1" Fill="#F5EFE6" Margin="4" />
+              <Rectangle Grid.Row="1" Grid.Column="0" Fill="#F5EFE6" Margin="4" />
+              <Rectangle Grid.Row="1" Grid.Column="1" Fill="#C9A227" Margin="4" />
             </Grid>
           </Viewbox>
-          <TextBlock Text="Windows" FontSize="36" FontWeight="SemiBold"
+          <TextBlock Text="Windows" FontSize="34" FontFamily="{StaticResource DisplayFont}"
                      HorizontalAlignment="Center" Margin="0,16,0,0" />
-          <TextBlock x:Name="WindowsSubtitle" Text="Desktop" FontSize="19"
+          <TextBlock x:Name="WindowsSubtitle" Text="Desktop" FontSize="16"
                      Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Center" Margin="0,6,0,0" />
         </StackPanel>
       </Button>
     </UniformGrid>
 
-    <!-- Footer: status line + input hints. -->
-    <Grid Grid.Row="2" Margin="14,12,14,0">
-      <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="*" />
-        <ColumnDefinition Width="Auto" />
-      </Grid.ColumnDefinitions>
-      <TextBlock x:Name="StatusText" Grid.Column="0" Text="" FontSize="18"
-                 Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center"
-                 TextWrapping="Wrap" />
-      <TextBlock Grid.Column="1" Text="A / Enter  Select    B / Esc  Back    Menu  Settings    Ctrl+Alt+Home  Return home"
-                 FontSize="18" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
+    <!-- Footer: status line + input hints, under a brass hairline. -->
+    <Grid Grid.Row="3" Margin="14,12,14,0">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+      </Grid.RowDefinitions>
+      <Border Grid.Row="0" Height="1" Background="{StaticResource HairlineBrush}" Margin="0,0,0,12" />
+      <Grid Grid.Row="1">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <TextBlock x:Name="StatusText" Grid.Column="0" Text="" FontSize="17"
+                   Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center"
+                   TextWrapping="Wrap" />
+        <TextBlock Grid.Column="1" Text="A / Enter  Select    B / Esc  Back    Menu  Settings    Ctrl+Alt+Home  Return home"
+                   FontSize="16" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+      </Grid>
     </Grid>
   </Grid>
 </Window>
