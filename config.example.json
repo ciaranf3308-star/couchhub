@@ -1,0 +1,43 @@
+{
+  // CouchHub example configuration.
+  // Copy to %LOCALAPPDATA%\CouchHub\config.json, or just open Settings in
+  // CouchHub — it generates this file automatically on first run.
+  // NEVER put IPTV passwords, tokens or other credentials in this file.
+  "gaming": {
+    "displayName": "Gaming",
+    "exePath": "C:\\ES-DE\\ES-DE.exe",
+    "arguments": "",
+    "workingDirectory": "",
+    "fullscreenPreferred": true,
+    "hideOnLaunch": true
+  },
+  // TV is HotPlayer, a Microsoft Store app — it has no .exe path.
+  // Set exePath to its Store target, found on the PC with:
+  //   Get-AppxPackage *HotPlayer* | Select-Object Name, PackageFamilyName
+  // then use "shell:AppsFolder\<PackageFamilyName>!App" with the real
+  // values from that command. Do NOT guess the family name, and do NOT
+  // paste the value below literally — it is a placeholder.
+  // Alternative: create a .lnk shortcut to HotPlayer and put its path here.
+  // Arguments do not apply to a Store app; leave them empty.
+  "tv": {
+    "displayName": "TV",
+    "exePath": "shell:AppsFolder\\<HotPlayer-PackageFamilyName>!App",
+    "arguments": "",
+    "workingDirectory": "",
+    "fullscreenPreferred": true,
+    "hideOnLaunch": true
+  },
+  "youTube": {
+    "displayName": "YouTube",
+    "exePath": "C:\\FreeTube\\FreeTube.exe",
+    "arguments": "",
+    "workingDirectory": "",
+    "fullscreenPreferred": true,
+    "hideOnLaunch": true
+  },
+  "fullscreenDashboard": true,
+  "scalingMode": "System",
+  "startAtSignIn": false,
+  "returnHomeShortcut": "Ctrl+Alt+Home",
+  "lastFocusedTile": 0
+}

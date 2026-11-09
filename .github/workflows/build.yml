@@ -1,0 +1,32 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Build
+        run: dotnet build .\CouchHub.sln -c Release
+
+      - name: Publish portable (self-contained win-x64)
+        run: powershell -ExecutionPolicy Bypass -File .\publish.ps1
+
+      - name: Upload portable build
+        uses: actions/upload-artifact@v4
+        with:
+          name: CouchHub-win-x64
+          path: publish\CouchHub\
+          if-no-files-found: error

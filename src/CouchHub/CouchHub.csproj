@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <!-- NotifyIcon for the "return home" tray fallback lives in WinForms.
+         This is part of the .NET BCL, not a third-party package. -->
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>CouchHub</AssemblyName>
+    <RootNamespace>CouchHub</RootNamespace>
+    <PlatformTarget>x64</PlatformTarget>
+    <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
+    <!-- No trimming / no AOT: WPF is not compatible with trimming in v0.1. -->
+    <PublishTrimmed>false</PublishTrimmed>
+    <Version>0.1.0</Version>
+    <AssemblyVersion>0.1.0.0</AssemblyVersion>
+    <FileVersion>0.1.0.0</FileVersion>
+    <Description>CouchHub — lightweight native Windows living-room launcher</Description>
+    <Copyright>Copyright (c) 2026</Copyright>
+  </PropertyGroup>
+
+</Project>
