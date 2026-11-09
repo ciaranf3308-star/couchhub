@@ -27,7 +27,10 @@ public static class UpdateService
     {
         try
         {
-            using var manager = new UpdateManager(FeedUrl);
+            // Note: Velopack's UpdateManager does not implement
+            // IDisposable in 1.2.x, so there is nothing to dispose here
+            // (a `using` on it fails the build — tried in v0.5.1).
+            var manager = new UpdateManager(FeedUrl);
             if (!manager.IsInstalled)
             {
                 Logger.Info("Update check skipped: RedSilk is running portable, not installed via Setup.exe.");
