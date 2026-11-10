@@ -24,6 +24,22 @@ public partial class App : Application
     // which is exactly what single-instance-per-sign-in needs.
     private const string SingleInstanceMutexName = "CouchHub.SingleInstance.v1";
 
+    /// <summary>
+    /// True once a deliberate exit was requested (tray "Exit RedSilk"
+    /// or Settings → Exit, via RequestExit). The dashboard window
+    /// treats any other close as "hide to tray": as the Windows shell,
+    /// an accidental close must never kill RedSilk and black-screen
+    /// the PC.
+    /// </summary>
+    public bool AllowExit { get; private set; }
+
+    /// <summary>Deliberate exit: allow the dashboard window to close for real, then shut down.</summary>
+    public void RequestExit()
+    {
+        AllowExit = true;
+        Shutdown();
+    }
+
     public AppConfig Config { get; private set; } = new();
     public ConfigService ConfigService { get; } = new();
     public ProcessLauncher Launcher { get; } = new();
@@ -68,7 +84,7 @@ public partial class App : Application
         }
 
         Logger.PruneOldLogs();
-        Logger.Info("RedSilk LingLing Edition 0.5.1 starting.");
+        Logger.Info("RedSilk LingLing Edition 0.6.0 starting.");
         Config = ConfigService.Load();
         if (Config.RecoveredFromMalformedFile)
             Logger.Warn("Config was malformed and was recovered with defaults.");

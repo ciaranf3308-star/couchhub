@@ -412,7 +412,9 @@ public partial class SettingsWindow : Window
         if (MessageBox.Show("Exit RedSilk completely?", "RedSilk",
                 MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
         {
-            Application.Current.Shutdown();
+            // v0.6.0 (shell): a deliberate exit must be allowed past
+            // the dashboard's close-to-tray guard.
+            _app.RequestExit();
         }
     }
 

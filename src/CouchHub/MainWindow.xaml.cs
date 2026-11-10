@@ -27,6 +27,13 @@ public partial class MainWindow : Window
     private readonly DispatcherTimer _epgTimer;
     private readonly EpgService _epgService = new();
     private readonly System.Windows.Forms.NotifyIcon _trayIcon;
+    // v0.6.0 (shell): the Explorer desktop RedSilk itself started, if
+    // any. Return home ends that session; an Explorer the user started
+    // independently is never tracked and never touched.
+    private readonly DesktopSession _desktopSession = new();
+    // v0.6.0 (shell): true while Windows is logging off / shutting
+    // down — the one close that is not an accidental close.
+    private bool _sessionEnding;
 
     private int _selectedIndex;
     private DateTime _lastActivation = DateTime.MinValue;
@@ -61,7 +68,7 @@ public partial class MainWindow : Window
         _trayIcon.DoubleClick += (_, _) => ShowDashboard();
         var trayMenu = new System.Windows.Forms.ContextMenuStrip();
         trayMenu.Items.Add("Return to RedSilk", null, (_, _) => ShowDashboard());
-        trayMenu.Items.Add("Exit RedSilk", null, (_, _) => Application.Current.Shutdown());
+        trayMenu.Items.Add("Exit RedSilk", null, (_, _) => _app.RequestExit());
         _trayIcon.ContextMenuStrip = trayMenu;
 
         // Gamepad events arrive on the input thread: marshal to the UI thread.
@@ -80,8 +87,31 @@ public partial class MainWindow : Window
             });
 
         SystemEvents.DisplaySettingsChanged += (_, _) => ApplyWindowMode();
+        // v0.6.0 (shell): a logoff/shutdown close is not an accidental
+        // close — RedSilk must not block Windows from signing out.
+        SystemEvents.SessionEnding += OnSessionEnding;
         Loaded += (_, _) => OnLoaded();
-        Closing += (_, _) => Cleanup();
+        Closing += MainWindow_Closing;
+    }
+
+    private void OnSessionEnding(object sender, SessionEndingEventArgs e) => _sessionEnding = true;
+
+    /// <summary>
+    /// Shell robustness (v0.6.0): as the Windows shell, RedSilk dying
+    /// from an ordinary close would black-screen the PC, so closing
+    /// the dashboard window hides to the tray instead of exiting.
+    /// Only a deliberate exit (tray / Settings, via App.RequestExit)
+    /// or a Windows logoff/shutdown may close the window for real.
+    /// </summary>
+    private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
+    {
+        if (!_app.AllowExit && !_sessionEnding)
+        {
+            e.Cancel = true;
+            HideDashboard();
+            return;
+        }
+        Cleanup();
     }
 
     private void OnLoaded()
@@ -120,6 +150,7 @@ public partial class MainWindow : Window
         _app.Config.LastFocusedTile = _selectedIndex;
         try { _app.ConfigService.Save(_app.Config); } catch { /* best effort */ }
         if (_hotkeyRegistered) WindowHelper.UnregisterHotkey(this, ReturnHomeHotkeyId);
+        SystemEvents.SessionEnding -= OnSessionEnding;
         _trayIcon.Visible = false;
         _trayIcon.Dispose();
     }
@@ -312,7 +343,10 @@ public partial class MainWindow : Window
     private void OnBack()
     {
         if (_settingsOpen || !IsVisible) return;
-        HideDashboard(); // B / Esc on the dashboard = go to the Windows desktop
+        // B / Esc on the dashboard = go to the Windows desktop. As
+        // the shell that means starting it if it is not running —
+        // merely hiding would leave a black screen with no taskbar.
+        ShowWindowsDesktop();
     }
 
     private void ActivateSelectedTile()
@@ -330,7 +364,7 @@ public partial class MainWindow : Window
 
         if (index == 3) // Windows tile
         {
-            HideDashboard();
+            ShowWindowsDesktop();
             return;
         }
 
@@ -358,6 +392,50 @@ public partial class MainWindow : Window
         if (target.HideOnLaunch) HideDashboard();
     }
 
+    /// <summary>
+    /// Windows tile (v0.6.0, shell). As the shell there is no desktop
+    /// to reveal until RedSilk starts one: if the taskbar is up
+    /// already, just hide (the desktop is there, whoever started it).
+    /// Otherwise launch explorer.exe, hide, and watch for the taskbar
+    /// — if it never appears, come back with an error instead of
+    /// leaving the user on a black screen. A failed launch never
+    /// hides the dashboard at all.
+    /// </summary>
+    private async void ShowWindowsDesktop()
+    {
+        if (DesktopSession.IsDesktopRunning())
+        {
+            HideDashboard();
+            return;
+        }
+        DesktopStartResult result = _desktopSession.StartDesktop();
+        if (!result.Success)
+        {
+            UpdateStatus(result.ErrorMessage ?? "Could not start Windows.");
+            MessageBox.Show(result.ErrorMessage, "RedSilk",
+                MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+        HideDashboard();
+        // Watchdog: the desktop should appear promptly. If it never
+        // does (e.g. a stray explorer.exe with no taskbar swallowed
+        // the launch), restore the dashboard rather than stranding
+        // the user — ShowDashboard also ends the failed session.
+        for (int i = 0; i < 40; i++) // up to ~10 s
+        {
+            await Task.Delay(250);
+            if (Dispatcher.HasShutdownStarted || Dispatcher.HasShutdownFinished) return;
+            if (DesktopSession.IsDesktopRunning()) return;
+            if (!_desktopSession.HasStartedDesktop) return; // return-home ended the session meanwhile
+        }
+        Logger.Warn("Explorer launched but no taskbar appeared; restoring dashboard.");
+        ShowDashboard();
+        UpdateStatus("Windows did not start. RedSilk is still here.");
+        MessageBox.Show("Windows did not start. If a File Explorer window is open, " +
+                        "close it and try the Windows tile again.", "RedSilk",
+            MessageBoxButton.OK, MessageBoxImage.Warning);
+    }
+
     // ----- Hide / show -----------------------------------------------------------
 
     /// <summary>Hide the dashboard (desktop mode / launched app). The app keeps running.</summary>
@@ -380,6 +458,12 @@ public partial class MainWindow : Window
             FocusSelectedTile();
             return;
         }
+        // Return home ends the desktop session RedSilk started: the
+        // taskbar/desktop load only when Windows is selected. Never
+        // touches an Explorer RedSilk did not start — DesktopSession
+        // tracks only its own process, and if it lost track it leaves
+        // Explorer alone.
+        _desktopSession.EndDesktopSession();
         Show();
         WindowState = _app.Config.FullscreenDashboard ? WindowState.Maximized : WindowState.Normal;
         _trayIcon.Visible = false;

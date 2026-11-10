@@ -61,7 +61,7 @@ public sealed class EpgService
 
     static EpgService()
     {
-        string version = typeof(EpgService).Assembly.GetName().Version?.ToString(3) ?? "0.5.1";
+        string version = typeof(EpgService).Assembly.GetName().Version?.ToString(3) ?? "0.6.0";
         Http.DefaultRequestHeaders.UserAgent.ParseAdd($"CouchHub/{version} (Windows)");
     }
 

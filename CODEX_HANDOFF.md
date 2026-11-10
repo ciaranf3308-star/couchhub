@@ -1,4 +1,4 @@
-# RedSilk LingLing Edition v0.5.1 — Deployment Handoff for Codex
+# RedSilk LingLing Edition v0.6.0 — Deployment Handoff for Codex
 
 **For:** Codex (installation agent on the real Windows mini PC)
 **Hardware:** MINISFORUM UM790 Pro, Ryzen 9 7940HS, Radeon 780M, 32 GB,
@@ -57,17 +57,20 @@ version — that is expected, not a crash. Config and logs live outside
 the versioned app folder (`%AppData%\CouchHub\config.json` and
 `%LOCALAPPDATA%\CouchHub\logs\`), so updates do not wipe settings.
 
-**v0.5.1 arrives the same way:** if v0.5.0 is already installed, the
-next launch stages v0.5.1 and the launch after that runs it — no
+**v0.6.0 arrives the same way:** if v0.5.1 is already installed, the
+next launch stages v0.6.0 and the launch after that runs it — no
 reinstall needed. **Do NOT run Setup.exe over an existing install** —
 let it auto-update. Verify the version in Settings ("Current version
-0.5.1") and that the dashboard now reads RedSilk / LINGLING EDITION
-over the burgundy silk background. On first run v0.5.1 migrates the
+0.6.0"). v0.6.0 is the shell build: the Windows tile now starts
+Explorer on demand, return home ends the desktop session, and closing
+the dashboard hides to the tray instead of exiting (see §8 for the
+shell test plan — the policy flip itself is your job on the PC, not
+part of this build). If you are installing fresh, use the
+`CouchHub-win-Setup.exe` from the feed as above (it is the v0.6.0
+installer once CI has published it). On first run v0.5.1 migrates the
 config from `%LOCALAPPDATA%\CouchHub\config.json` to
 `%AppData%\CouchHub\config.json` automatically (old file left in
-place) — confirm the new location exists after the first launch. If
-you are installing fresh, use the `CouchHub-win-Setup.exe` from the
-feed as above (it is the v0.5.1 installer once CI has published it).
+place) — confirm the new location exists after the first launch.
 
 ## 3. Configure the three launch targets
 
@@ -166,19 +169,27 @@ Leave autostart **off** until steps 2–3 and the checks in §5 pass.
 Then enable it in Settings ("Start RedSilk when Windows signs in").
 That creates a shortcut in the current user's Startup folder —
 reversible from Settings, no admin, no shell change. Do not enable it
-by editing the registry or replacing the shell.
+by editing the registry.
+
+**Shell mode replaces autostart, it does not add to it.** Once the
+Custom User Interface policy is set (§8), Winlogon launches RedSilk
+as the shell at sign-in — the Startup-folder shortcut is then
+redundant (a second launch would just exit via single-instance) and
+should be left off. Do not enable both.
 
 ## 5. Verify on the hardware (checklist — report results back)
 
 - [ ] Dashboard launches fullscreen at 1080p and at 4K (if the TV does 4K); text readable from ~3 m.
-- [ ] Controller: D-pad and left stick navigate, A launches, B goes to desktop, Menu opens Settings. Unplug/replug mid-session works.
+- [ ] Controller: D-pad and left stick navigate, A launches, B goes to desktop (starts it if it is not running, in shell mode), Menu opens Settings. Unplug/replug mid-session works.
 - [ ] Keyboard: arrows / Enter / Esc work; mouse clicks work; no double-launch from one press.
 - [ ] Each tile launches its app; already-running app is focused, not duplicated; missing app shows a friendly error (test by temporarily pointing a tile at a non-existent path, then restore it).
 - [ ] **TV / HotPlayer specifically:** TV tile launches HotPlayer from the `shell:AppsFolder\…!App` target (or the `.lnk` fallback) — record which method was used and the real target string. Launching it a second time while it is running brings the existing window forward, not a second copy. HotPlayer still plays the existing subscription; mouse navigation inside HotPlayer works as before. Record whether it opens maximised, and if not, what you did in HotPlayer to maximise it.
 - [ ] **Live TV guide (v0.5):** the TV tile shows a real now programme (title + channel + time range + progress bar) and Next / Later rows that match the actual broadcast at the time you look — compare against the real TV guide, do not just confirm that text is present. In Settings → "Live TV guide", press "Test guide" and record what it returns. Switch the channel to BBC One London and confirm the guide switches to the UK file and shows BBC One programmes. If the guide shows nothing, check network access to `www.open-epg.com` first and record the log lines — do not fill in a schedule by hand.
 - [ ] **Hero look (v0.5):** the four tiles are photographic (hunter / talk-show stage / mountain lake / glass bloom), the focused tile has a glowing border + soft glow + slight lift, and the footer shows the controller status and the A / B / Menu / Home hints. Judge it at 3 m and record what looks off. **Red Silk (v0.5.1) is the only theme:** the dashboard sits over the burgundy silk photograph, the header reads RedSilk / LINGLING EDITION, and there is no theme picker in Settings — do not look for one.
 - [ ] Return home: Ctrl+Alt+Home from the desktop and from inside a launched app; tray icon double-click; View+Menu held 2 s. **Test all three from inside HotPlayer specifically**, as well as from ES-DE and FreeTube. **Note the honest limitation:** the View+Menu shortcut is polled by RedSilk and may not fire while a fullscreen game owns the controller exclusively. Record what actually happens per app/game — do not claim it works everywhere.
-- [ ] Windows tile: desktop is normal Explorer, apps work, RedSilk returns via hotkey/tray.
+- [ ] Windows tile: if the desktop is already running, the tile hides RedSilk to it; if not (shell mode), the tile starts Explorer and the taskbar appears. Return home (hotkey / tray / View+Menu held 2 s) restores RedSilk and ends the desktop session — the taskbar goes away. Pressing the Windows tile again starts Explorer fresh.
+- [ ] **Close-to-tray (v0.6.0):** closing the dashboard window (X button / Alt+F4) hides RedSilk to the tray instead of exiting — the tray icon stays visible and clicking it restores the dashboard. Only tray → Exit RedSilk or Settings → Exit quits for real. This matters most in shell mode, where an accidental close must never black-screen the PC.
+- [ ] **Shell (only after the policy is set — §8):** tile-start, return-home-end, and close-to-tray all verified per §8, recovery rehearsed first.
 - [ ] HDMI: unplug/replug the TV, confirm the dashboard reappears fullscreen on the right display.
 - [ ] Settings persist across a restart; a deliberately malformed `config.json` is backed up and RedSilk starts with defaults (then restore the good config).
 - [ ] Single instance: launching `CouchHub.exe` twice leaves one dashboard — and the second launch must **not** wipe the configured launch targets or crash on exit (v0.5.0 bug, fixed in v0.5.1: the second instance touches neither config nor the mutex).
@@ -229,6 +240,19 @@ by editing the registry or replacing the shell.
   new version up — verify the version in Settings ("Current version …")
   after an update lands, and report it. The Velopack pack id and exe
   stay `CouchHub` / `CouchHub.exe` — only the display name is RedSilk.
+- **Shell mode (v0.6.0):** the Windows tile starts Explorer on
+  demand and return home ends the desktop session RedSilk started —
+  but only for the Explorer RedSilk itself started. If RedSilk
+  restarts (crash, update, or manual exit), it has lost track of the
+  desktop session and leaves Explorer alone rather than guessing —
+  see §8. Closing the dashboard hides to the tray; only a deliberate
+  exit quits. None of this is hardware-tested yet (see §8).
+- **HotPlayer with no Explorer running is unverified** — the TV tile
+  launches a Store app while Explorer is not the shell; §8 step 5
+  covers it.
+- **Automatic (PIN-free) sign-in is a separate, unverified check** —
+  not covered by this build, do not attempt it as part of the shell
+  work (see §8 step 6).
 - The tray icon uses `System.Drawing.SystemIcons.Application` as its
   icon in v0.1; a branded RedSilk icon can replace it later.
 
@@ -246,3 +270,78 @@ by editing the registry or replacing the shell.
   check the exact `shell:AppsFolder\…!App` string first (a wrong family
   name or App id is the most likely cause), test it in Run, and fall
   back to a HotPlayer `.lnk` shortcut if Store activation fails.
+
+## 8. Windows shell test plan (v0.6.0 — Codex does this on the PC)
+
+v0.6.0 is the RedSilk side of running RedSilk as the Windows shell.
+Flipping the policy and proving it on the hardware is this section —
+do not skip steps, and do not do step 2 before step 1.
+
+**Step 0 — spare account first.** Do all of this on a spare local
+account before touching the main account. The Custom User Interface
+policy is per-user, so a mistake on the spare account cannot lock
+out the main one.
+
+**Step 1 — rehearse recovery FIRST (before the policy is set).**
+With RedSilk running normally, prove the escape hatch works:
+Ctrl+Alt+Del → Task Manager → File → Run new task → type
+`explorer.exe` → OK, and the desktop/taskbar come back. Also prove
+a second account with a normal shell still signs in to a normal
+desktop — that account is the fallback if anything goes wrong on
+the shell account. Do not proceed until both are proven.
+
+**Step 2 — set the policy (spare account).** `gpedit.msc` →
+User Configuration → Administrative Templates → System →
+Custom User Interface → Enabled, and set the shell to the installed
+RedSilk exe path — normally
+`%LocalAppData%\CouchHub\current\CouchHub.exe` (confirm the exact
+path from the installed Start-menu shortcut first; Velopack keeps
+the current version under `current\`). The equivalent registry
+value is the per-user Winlogon `Shell` value; either route is the
+same policy. Sign out and back in: RedSilk should appear fullscreen
+with no taskbar and no desktop behind it. If RedSilk fails to start,
+use the step-1 recovery (Ctrl+Alt+Del → Task Manager → Run
+`explorer.exe`) to get a desktop back, then fix the path.
+
+**Step 3 — Windows tile starts the desktop.** On the shell account,
+select the Windows tile: Explorer should launch and the taskbar +
+desktop appear. B / Esc from the dashboard should do the same.
+Record how long the taskbar takes to appear. If the taskbar never
+appears, RedSilk should restore itself after ~10 s with a plain
+error — record that too.
+
+**Step 4 — return home ends the desktop session.** From the desktop,
+press Ctrl+Alt+Home, and separately try the tray icon and View+Menu
+held 2 s: each should restore RedSilk to the foreground AND make
+the taskbar/desktop go away. Pressing the Windows tile again after
+returning home must launch Explorer fresh (it is gone by then).
+Check Task Manager: the `explorer.exe` RedSilk started should be
+gone after return home, and no other Explorer should have been
+touched.
+
+**Step 5 — HotPlayer with no Explorer running.** From the shell
+account, before ever selecting the Windows tile, select the TV tile:
+HotPlayer must still launch and play the existing subscription.
+This is the one genuinely unverified interaction in shell mode —
+a Store app launching with no Explorer as shell. Record exactly
+what happens (launches / plays / maximised or not).
+
+**Step 6 — NOT covered by this build: automatic (PIN-free)
+sign-in.** Do not attempt it as part of the shell work. It is a
+separate, unverified check — the user still signs in normally for
+now, and RedSilk appears after sign-in.
+
+**Known shell-mode edges (do not "fix" these on the PC):**
+- If RedSilk restarts (crash, auto-update, or a deliberate exit)
+  while the desktop is up, it has lost track of the desktop session
+  and deliberately leaves Explorer alone rather than guessing —
+  the desktop stays up and the Windows tile will just hide RedSilk
+  to it. That is the safe failure mode, by design.
+- Deliberately exiting RedSilk (tray → Exit RedSilk, Settings →
+  Exit) while the desktop is up leaves the desktop up, so an exit
+  can never strand the user on a black screen.
+- A staged Velopack update still applies on the next launch; the
+  app restarting itself for an update while it is the shell is
+  expected.
+- The Startup-folder autostart (§4) is redundant once the policy
+  is set — leave it off.

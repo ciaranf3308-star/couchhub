@@ -1,10 +1,12 @@
-# RedSilk LingLing Edition v0.5.1 — Windows Living-Room Launcher
+# RedSilk LingLing Edition v0.6.0 — Windows Living-Room Launcher
 
 A lightweight, native Windows entertainment dashboard for a MINISFORUM
 UM790 Pro mini PC connected to a TV. Power on, sign in, RedSilk appears
 fullscreen with four large tiles — Gaming, TV, YouTube, Windows — and you
-drive it with an Xbox controller, keyboard, or mouse. Windows stays
-underneath; nothing about the shell is replaced.
+drive it with an Xbox controller, keyboard, or mouse. Since v0.6.0 RedSilk
+can also *be* the Windows shell (Custom User Interface policy — see
+"Windows shell" below): then the desktop and taskbar load only when you
+select the Windows tile, and return home ends the desktop session again.
 
 > **Name note:** the product is RedSilk LingLing Edition. The exe and
 > the Velopack pack id stay `CouchHub` / `CouchHub.exe` on purpose —
@@ -25,7 +27,7 @@ underneath; nothing about the shell is replaced.
 | **Gaming** | Launches ES-DE (configurable .exe path). Empty path → tile shows "Setup required". |
 | **TV** | Launches HotPlayer (Microsoft Store app) via its `shell:AppsFolder\…!App` target — see Configuration below. It has no .exe path. The tile also shows a live now / next guide for the configured channel (see "Live TV guide" below) — real data only, never a made-up schedule. |
 | **YouTube** | Launches FreeTube (configurable .exe path). |
-| **Windows** | Hides RedSilk to expose the normal desktop. Return with Ctrl+Alt+Home, the tray icon, or View+Menu held 2 s. |
+| **Windows** | Starts the Windows desktop on demand if it is not running yet (v0.6.0 shell mode), otherwise hides RedSilk to expose the normal desktop. Return home (Ctrl+Alt+Home, the tray icon, or View+Menu held 2 s) restores RedSilk and ends the desktop session RedSilk started — the taskbar goes away again. |
 
 HotPlayer notes: it is already installed on the UM790 Pro and already
 plays the user's IPTV subscription — RedSilk only launches it, it never
@@ -103,6 +105,39 @@ degrades honestly: the LIVE badge and channel name stay, the programme
 rows hide, and a small "Live guide unavailable right now" line shows.
 RedSilk never invents a programme name or time.
 
+## Windows shell (v0.6.0)
+
+RedSilk can replace Explorer as the Windows shell via the Custom User
+Interface policy (per-user shell — Microsoft's own docs list Pro as
+supported; Shell Launcher is the Enterprise-only feature and is **not**
+used). Winlogon then launches RedSilk instead of Explorer at sign-in,
+so there is no taskbar or desktop until RedSilk starts one. Flipping
+the policy itself is Codex's job on the PC — see `CODEX_HANDOFF.md`
+for the test plan, which rehearses recovery **first**. The RedSilk
+side of the contract, implemented in v0.6.0:
+
+- **Windows tile / B / Esc** start the desktop on demand: if the
+  taskbar is already up, RedSilk just hides; otherwise it launches
+  `explorer.exe`, hides, and watches for the taskbar for up to ~10 s.
+  If the taskbar never appears, RedSilk restores itself with a plain
+  error instead of leaving a black screen. A failed launch never
+  hides the dashboard.
+- **Return home** (Ctrl+Alt+Home, tray icon, View+Menu held 2 s)
+  restores RedSilk and terminates the Explorer process RedSilk
+  started, so the taskbar/desktop go away again. Only the Explorer
+  RedSilk itself started is ever terminated — an Explorer the user
+  started independently is never tracked and never touched, and if
+  RedSilk restarts and has lost track, it leaves Explorer alone.
+- **Closing the dashboard window hides to the tray** instead of
+  exiting, so an accidental close cannot black-screen the PC. Only a
+  deliberate exit (tray → Exit RedSilk, or Settings → Exit) or a
+  Windows logoff/shutdown closes it for real — RedSilk never blocks
+  sign-out. Deliberately exiting while the desktop is up leaves the
+  desktop up, so an exit can never strand the user either.
+- **Auto-update is untouched** by the shell change: same pack id
+  (`CouchHub`), same exe, same feed. A staged update still applies
+  on the next launch.
+
 ## Look (v0.5.1)
 
 The dashboard is photographic: each tile is full-bleed original
@@ -170,7 +205,7 @@ src/CouchHub/ThemeRedSilk.xaml   # centralised colours / styles — the one Red 
 src/CouchHub/Config/             # AppConfig, ConfigService (JSON, safe recovery)
 src/CouchHub/Input/              # XInputService (dynamic XInput1_4 → 1_3 → 9_1_0), InputService
 src/CouchHub/Launcher/           # ProcessLauncher (validate, focus-existing, launch, maximise)
-src/CouchHub/Services/           # Logger, WindowHelper (Win32), StartupService (Startup-folder .lnk), UpdateService (Velopack auto-update), EpgService (free XMLTV guide + optional Xtream override)
+src/CouchHub/Services/           # Logger, WindowHelper (Win32), StartupService (Startup-folder .lnk), UpdateService (Velopack auto-update), EpgService (free XMLTV guide + optional Xtream override), DesktopSession (on-demand Explorer desktop for shell mode, v0.6.0)
 ```
 
 Design choices worth knowing:
@@ -186,7 +221,13 @@ Design choices worth knowing:
   (~0% / <150 MB) are goals to measure on the UM790 Pro, not claims —
   they have not been measured yet.
 - **Startup is a user-level Startup-folder shortcut**, reversible from
-  Settings, no admin, no registry Run key, no shell change.
+  Settings, no admin, no registry Run key. That is the autostart for
+  normal desktop mode; shell mode (v0.6.0) does not use it — Winlogon
+  launches RedSilk as the shell instead (see "Windows shell" above).
+- **Shell mode never kills an Explorer it did not start.** The
+  desktop session is tracked by Process object, in memory only, for
+  the current run; a restart loses the track on purpose rather than
+  guessing.
 - **Single instance** via a session-local named mutex
   (`CouchHub.SingleInstance.v1` — `Local\` scope, so it never leaks
   across user sessions). A second launch exits immediately and touches
@@ -225,11 +266,12 @@ with empty launch targets; open Settings and point each tile at its app.
 
 Game library / cover scraping, recently-played tracking, any IPTV
 player or stream handling, YouTube downloading, VPN, remote apps,
-shell replacement, kiosk lockdown, and
+kiosk lockdown, and
 controller-to-mouse mapping (HotPlayer needs a mouse for now — deferred
 polish). RedSilk launches other apps; it does not become them.
 (Automatic updates were on this list until v0.4 added them — see
-"Updates" above.)
+"Updates" above. Shell replacement was on this list until v0.6.0
+added it — see "Windows shell" above.)
 
 ## Deployment
 

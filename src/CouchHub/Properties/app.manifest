@@ -2,7 +2,7 @@
 <!-- Per-monitor DPI awareness: essential for correct 1080p / 4K TV rendering.
      CouchHub never requires administrator privileges. -->
 <assembly manifestVersion="1.0" xmlns="urn:schemas-microsoft-com:asm.v1">
-  <assemblyIdentity version="0.5.1.0" name="CouchHub.app" />
+  <assemblyIdentity version="0.6.0.0" name="CouchHub.app" />
   <trustInfo xmlns="urn:schemas-microsoft-com:asm.v2">
     <security>
       <requestedPrivileges xmlns="urn:schemas-microsoft-com:asm.v3">
