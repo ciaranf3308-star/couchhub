@@ -84,7 +84,7 @@ public partial class App : Application
         }
 
         Logger.PruneOldLogs();
-        Logger.Info("RedSilk LingLing Edition 0.6.0 starting.");
+        Logger.Info("RedSilk LingLing Edition 0.7.0 starting.");
         Config = ConfigService.Load();
         if (Config.RecoveredFromMalformedFile)
             Logger.Warn("Config was malformed and was recovered with defaults.");

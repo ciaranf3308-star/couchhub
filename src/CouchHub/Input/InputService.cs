@@ -17,6 +17,8 @@ public sealed class InputService : IDisposable
     public event Action? Select;
     public event Action? Back;
     public event Action? OpenSettings;
+    /// <summary>Y button: open the new-episodes view (v0.7.0).</summary>
+    public event Action? OpenNotifications;
     /// <summary>View + Menu held for 2 seconds: return to CouchHub.</summary>
     public event Action? ReturnHomeRequested;
     /// <summary>Raised when controller presence changes (for the settings screen).</summary>
@@ -148,6 +150,8 @@ public sealed class InputService : IDisposable
         if ((pressed & XInputService.DPadRight) != 0) Navigate?.Invoke(NavDirection.Right);
         if ((pressed & XInputService.A) != 0) Select?.Invoke();
         if ((pressed & XInputService.B) != 0) Back?.Invoke();
+        // Y opens the new-episodes view (v0.7.0); X is unassigned.
+        if ((pressed & XInputService.Y) != 0) OpenNotifications?.Invoke();
         // Menu (Start) alone opens settings; View (Back) alone does nothing.
         if ((pressed & XInputService.Start) != 0 && (buttons & XInputService.Back) == 0)
             OpenSettings?.Invoke();

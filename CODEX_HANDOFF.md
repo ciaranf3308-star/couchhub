@@ -1,4 +1,4 @@
-# RedSilk LingLing Edition v0.6.0 — Deployment Handoff for Codex
+# RedSilk LingLing Edition v0.7.0 — Deployment Handoff for Codex
 
 **For:** Codex (installation agent on the real Windows mini PC)
 **Hardware:** MINISFORUM UM790 Pro, Ryzen 9 7940HS, Radeon 780M, 32 GB,
@@ -71,6 +71,16 @@ installer once CI has published it). On first run v0.5.1 migrates the
 config from `%LOCALAPPDATA%\CouchHub\config.json` to
 `%AppData%\CouchHub\config.json` automatically (old file left in
 place) — confirm the new location exists after the first launch.
+
+**v0.7.0 arrives the same way:** if v0.6.0 is already installed, the
+next launch stages v0.7.0 and the launch after that runs it — no
+reinstall needed. Verify the version in Settings ("Current version
+0.7.0"). v0.7.0 is the followed-series notifications build: the TV
+tile shows an unread badge when RedSilk TV reports new episodes
+(see §9 for the test plan — it needs a hand-written
+`notifications.json` until the TV app writes the real one, and the
+TV tile must point at the RedSilk TV exe, not HotPlayer, for the
+deep-link step).
 
 ## 3. Configure the three launch targets
 
@@ -188,6 +198,10 @@ should be left off. Do not enable both.
 - [ ] **Hero look (v0.5):** the four tiles are photographic (hunter / talk-show stage / mountain lake / glass bloom), the focused tile has a glowing border + soft glow + slight lift, and the footer shows the controller status and the A / B / Menu / Home hints. Judge it at 3 m and record what looks off. **Red Silk (v0.5.1) is the only theme:** the dashboard sits over the burgundy silk photograph, the header reads RedSilk / LINGLING EDITION, and there is no theme picker in Settings — do not look for one.
 - [ ] Return home: Ctrl+Alt+Home from the desktop and from inside a launched app; tray icon double-click; View+Menu held 2 s. **Test all three from inside HotPlayer specifically**, as well as from ES-DE and FreeTube. **Note the honest limitation:** the View+Menu shortcut is polled by RedSilk and may not fire while a fullscreen game owns the controller exclusively. Record what actually happens per app/game — do not claim it works everywhere.
 - [ ] Windows tile: if the desktop is already running, the tile hides RedSilk to it; if not (shell mode), the tile starts Explorer and the taskbar appears. Return home (hotkey / tray / View+Menu held 2 s) restores RedSilk and ends the desktop session — the taskbar goes away. Pressing the Windows tile again starts Explorer fresh.
+- [ ] **Followed-series notifications (v0.7.0):** see §9 — badge
+  appears with a hand-written `notifications.json`, click opens the
+  New episodes view, a row deep-links into the TV app, and a
+  missing/malformed file means no badge and no crash.
 - [ ] **Close-to-tray (v0.6.0):** closing the dashboard window (X button / Alt+F4) hides RedSilk to the tray instead of exiting — the tray icon stays visible and clicking it restores the dashboard. Only tray → Exit RedSilk or Settings → Exit quits for real. This matters most in shell mode, where an accidental close must never black-screen the PC.
 - [ ] **Shell (only after the policy is set — §8):** tile-start, return-home-end, and close-to-tray all verified per §8, recovery rehearsed first.
 - [ ] HDMI: unplug/replug the TV, confirm the dashboard reappears fullscreen on the right display.
@@ -345,3 +359,98 @@ now, and RedSilk appears after sign-in.
   expected.
 - The Startup-folder autostart (§4) is redundant once the policy
   is set — leave it off.
+
+## 9. Followed-series notifications test plan (v0.7.0 — Codex does this on the PC)
+
+v0.7.0 is the launcher side of the followed-series contract with
+RedSilk TV. **The TV app does not write `notifications.json` yet** —
+until it ships, test with a hand-written file in exactly the shape
+the TV app will produce. Nothing below needs the TV app to be
+installed except step 4, which needs the RedSilk TV exe.
+
+The file is `%LOCALAPPDATA%\RedSilk\integration\notifications.json`:
+
+```json
+{
+  "schemaVersion": 1,
+  "lastCheck": "2026-11-10T10:00:00Z",
+  "unreadCount": 2,
+  "notifications": [
+    {
+      "seriesId": "series-123",
+      "seriesTitle": "Test Show",
+      "season": 2,
+      "episode": 4,
+      "episodeTitle": "The Test Episode",
+      "detectedAt": "2026-11-10T09:30:00Z",
+      "posterUrl": ""
+    },
+    {
+      "seriesId": "series-456",
+      "seriesTitle": "Second Show",
+      "season": 1,
+      "episode": 1,
+      "episodeTitle": "",
+      "detectedAt": "2026-11-10T09:00:00Z"
+    }
+  ]
+}
+```
+
+**Step 1 — badge appears.** With RedSilk running, create the
+integration folder and write the file above. Within about a second
+the TV tile must show a small wine "2 new" badge (top right of the
+tile, next to the LIVE badge) and a "✦ New episodes available" chip
+under the guide rows, and the footer must gain a "Y — New episodes"
+hint. No restart, no polling wait — the watcher picks the change up
+live. Record whether it appears, and how quickly.
+
+**Step 2 — view opens from the badge, the chip, and Y.** Click the
+badge: the New episodes view opens listing both shows with
+"Series 2 · Episode 4 — The Test Episode" and "Series 1 ·
+Episode 1", each with its detected date, and the second row shows
+no episode title (it was empty — it must not invent one). Close it
+(Esc / Close button), then open it again from the chip, then again
+with Y on the controller and Y on the keyboard. In the view, D-pad
+up/down must move between rows, A must pick the focused row, B must
+close. Clicking the badge or chip must NOT also launch the TV app
+(the tile underneath must not fire).
+
+**Step 3 — file absent / malformed = no badge, no crash.** Delete
+the file: the badge, chip and footer hint must disappear within
+about a second and RedSilk must keep running. Then write garbage
+into the file (e.g. `{not json`), then a wrong schema version
+(`"schemaVersion": 99`), then an empty object (`{}`): in every case
+there must be no badge and no crash, and the log
+(`%LOCALAPPDATA%\CouchHub\logs\`) should have one short warning
+line about the file — no file content in the log. Restore the good
+file from step 1 afterwards and confirm the badge comes back.
+
+**Step 4 — deep link opens the TV app at the right series.** This
+step needs the TV tile pointed at the **RedSilk TV exe** (a real
+`.exe` path in Settings → TV), not the HotPlayer Store target —
+a Store target cannot take command-line arguments, and the
+deep-link step must show a plain error in that case instead of
+launching (verify that too, before repointing the tile, if the
+tile still points at HotPlayer). With the tile pointed at the TV
+exe, open the New episodes view and pick "Test Show": the TV app
+must launch with `--open-series series-123 --episode 2:4` and open
+at that series/episode. Pick "Second Show": it must launch with
+`--open-series series-456 --episode 1:1`. If a notification has no
+season/episode, the launch must be `--open-series <id>` with no
+`--episode` flag. Confirm the deep link actually lands on the
+right series in the TV app — do not just confirm the app opened.
+Note: the TV app's own single-instance forwarding is the TV app's
+job; if it is already running, the link should still land on the
+right series.
+
+**Step 5 — TV app not configured.** Point the TV tile at nothing
+(empty path) and pick a row in the view: a plain error ("TV is
+not set up yet…") and no crash, and the view stays open. Restore
+the real TV path afterwards.
+
+**Step 6 — badge survives return home.** With unread episodes
+showing, go to the Windows desktop and return home (Ctrl+Alt+Home):
+the badge must still be there. Quit RedSilk properly (tray →
+Exit RedSilk) and relaunch: the badge must be there on startup too
+(the file is read once at startup).
