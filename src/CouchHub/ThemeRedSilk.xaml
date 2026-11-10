@@ -129,6 +129,82 @@
     </Setter>
   </Style>
 
+  <!-- New-episodes badge (v0.7.0): the small wine count chip on the
+       TV tile and the "New episodes available" chip below it. Wine
+       fill, ivory serif text, brass edge on focus — the same language
+       as the LIVE badge and the SETUP REQUIRED chips. -->
+  <Style x:Key="BadgeButtonStyle" TargetType="Button">
+    <Setter Property="Background" Value="{StaticResource BrassBrush}" />
+    <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+    <Setter Property="FontFamily" Value="{StaticResource DisplayFont}" />
+    <Setter Property="FontSize" Value="15" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="BorderBrush" Value="{StaticResource BrassSoftBrush}" />
+    <Setter Property="Padding" Value="12,5" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Button">
+          <Border Background="{TemplateBinding Background}"
+                  BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}"
+                  CornerRadius="10" Padding="{TemplateBinding Padding}">
+            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter Property="BorderBrush" Value="{StaticResource TextPrimaryBrush}" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- One row in the New episodes view (v0.7.0): elevated wine
+       surface, hairline edge, brass edge + glow on focus so it reads
+       at 3 m like a focused tile. Content is left-aligned. -->
+  <Style x:Key="NotificationItemButtonStyle" TargetType="Button">
+    <Setter Property="Background" Value="{StaticResource SurfaceElevatedBrush}" />
+    <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+    <Setter Property="FontFamily" Value="{StaticResource UiFont}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+    <Setter Property="Padding" Value="20,14" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Button">
+          <Border Background="{TemplateBinding Background}"
+                  BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}"
+                  CornerRadius="10" Padding="{TemplateBinding Padding}">
+            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalAlignment="Center" />
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter Property="BorderBrush" Value="{StaticResource BrassSoftBrush}" />
+            </Trigger>
+            <Trigger Property="IsFocused" Value="True">
+              <Setter Property="BorderBrush" Value="{StaticResource BrassBrush}" />
+              <Setter Property="BorderThickness" Value="2" />
+              <Setter Property="Effect">
+                <Setter.Value>
+                  <DropShadowEffect Color="#C14B5F" BlurRadius="24" ShadowDepth="0" Opacity="0.45" />
+                </Setter.Value>
+              </Setter>
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
   <!-- Small header / settings buttons. -->
   <Style x:Key="ChromeButtonStyle" TargetType="Button">
     <Setter Property="Background" Value="Transparent" />

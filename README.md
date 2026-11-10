@@ -1,4 +1,4 @@
-# RedSilk LingLing Edition v0.6.0 — Windows Living-Room Launcher
+# RedSilk LingLing Edition v0.7.0 — Windows Living-Room Launcher
 
 A lightweight, native Windows entertainment dashboard for a MINISFORUM
 UM790 Pro mini PC connected to a TV. Power on, sign in, RedSilk appears
@@ -25,7 +25,7 @@ select the Windows tile, and return home ends the desktop session again.
 | Tile | Behaviour |
 | --- | --- |
 | **Gaming** | Launches ES-DE (configurable .exe path). Empty path → tile shows "Setup required". |
-| **TV** | Launches HotPlayer (Microsoft Store app) via its `shell:AppsFolder\…!App` target — see Configuration below. It has no .exe path. The tile also shows a live now / next guide for the configured channel (see "Live TV guide" below) — real data only, never a made-up schedule. |
+| **TV** | Launches HotPlayer (Microsoft Store app) via its `shell:AppsFolder\…!App` target — see Configuration below. It has no .exe path. The tile also shows a live now / next guide for the configured channel (see "Live TV guide" below) — real data only, never a made-up schedule. When RedSilk TV finds new episodes of a followed series (see "Followed-series notifications" below), the TV tile shows a small unread badge and a "New episodes available" chip — pick either to open the list, then pick a series to open it in the TV app. |
 | **YouTube** | Launches FreeTube (configurable .exe path). |
 | **Windows** | Starts the Windows desktop on demand if it is not running yet (v0.6.0 shell mode), otherwise hides RedSilk to expose the normal desktop. Return home (Ctrl+Alt+Home, the tray icon, or View+Menu held 2 s) restores RedSilk and ends the desktop session RedSilk started — the taskbar goes away again. |
 
@@ -49,6 +49,7 @@ the app if needed.
 
 - **D-pad / left stick** — move between tiles (stick has a dead zone and repeat timing)
 - **A / Enter** — launch · **B / Esc** — back / go to desktop
+- **Y** — open the New episodes list when the TV tile has unread episodes (v0.7.0)
 - **Menu (Start)** — open Settings
 - **View + Menu held 2 seconds** — return home from a game/app
 - **Ctrl+Alt+Home** — return home from anywhere (configurable in Settings)
@@ -104,6 +105,38 @@ If the guide cannot be downloaded or the channel has no data, the tile
 degrades honestly: the LIVE badge and channel name stay, the programme
 rows hide, and a small "Live guide unavailable right now" line shows.
 RedSilk never invents a programme name or time.
+
+## Followed-series notifications (v0.7.0)
+
+v0.7.0 is the launcher side of the followed-series contract with
+RedSilk TV: when the TV app finds a new episode of a series the user
+follows, it writes `%LOCALAPPDATA%\RedSilk\integration\notifications.json`
+(schema v1 — `schemaVersion`, `lastCheck`, `unreadCount`, and a
+`notifications` list of series id / title / season / episode /
+episode title / detected time). RedSilk only **reads** that file —
+the TV app owns it.
+
+- The TV tile shows a small wine unread-count badge and a
+  "New episodes available" chip while there are unread episodes, plus
+  a "Y — New episodes" hint in the footer. No badge, no chip, no hint
+  when there is nothing unread.
+- The badge / chip open the **New episodes** view (also Y on the
+  controller or keyboard): series title, season/episode, episode
+  title, detected date. Pick a row to open that series in the TV app
+  at that episode. D-pad / A / B work in the view, as do mouse,
+  Tab / arrows / Enter / Esc.
+- The deep link is `"<TV exe>" --open-series <seriesId>
+  [--episode <season>:<episode>]` (episode omitted when unknown).
+  The series id is allowlisted before launch (letters, digits,
+  `- _ . :` only, never a leading dash, never raw strings through),
+  and the TV tile must point at a real TV-app exe — a Store-app /
+  shell target (HotPlayer) cannot take arguments, so that case shows
+  a plain error instead of launching.
+- Refresh is by `FileSystemWatcher` on the integration folder
+  (debounced 500 ms), plus a read at startup and on return home —
+  no timer polling. A missing or malformed file, a wrong schema
+  version, or missing fields all read as zero notifications: the
+  dashboard never crashes or errors over a file it does not own.
 
 ## Windows shell (v0.6.0)
 
@@ -199,13 +232,14 @@ Logs: `%LOCALAPPDATA%\CouchHub\logs\couchhub-YYYY-MM-DD.log`
 CouchHub.sln
 src/CouchHub/CouchHub.csproj      # net10.0-windows, UseWPF + UseWindowsForms (tray icon only)
 src/CouchHub/App.xaml(.cs)        # lifecycle, single-instance Mutex, unhandled-exception logging
-src/CouchHub/MainWindow.xaml(.cs) # dashboard, tiles, clock, hotkey, tray, hide/show
+src/CouchHub/MainWindow.xaml(.cs) # dashboard, tiles, clock, hotkey, tray, hide/show, TV tile unread badge (v0.7.0)
+src/CouchHub/NotificationsWindow.xaml(.cs) # New episodes view: list + TV deep link (v0.7.0)
 src/CouchHub/SettingsWindow.xaml(.cs)
 src/CouchHub/ThemeRedSilk.xaml   # centralised colours / styles — the one Red Silk theme
 src/CouchHub/Config/             # AppConfig, ConfigService (JSON, safe recovery)
 src/CouchHub/Input/              # XInputService (dynamic XInput1_4 → 1_3 → 9_1_0), InputService
 src/CouchHub/Launcher/           # ProcessLauncher (validate, focus-existing, launch, maximise)
-src/CouchHub/Services/           # Logger, WindowHelper (Win32), StartupService (Startup-folder .lnk), UpdateService (Velopack auto-update), EpgService (free XMLTV guide + optional Xtream override), DesktopSession (on-demand Explorer desktop for shell mode, v0.6.0)
+src/CouchHub/Services/           # Logger, WindowHelper (Win32), StartupService (Startup-folder .lnk), UpdateService (Velopack auto-update), EpgService (free XMLTV guide + optional Xtream override), DesktopSession (on-demand Explorer desktop for shell mode, v0.6.0), NotificationsService (followed-series notifications.json reader + watcher + TV deep link, v0.7.0)
 ```
 
 Design choices worth knowing:

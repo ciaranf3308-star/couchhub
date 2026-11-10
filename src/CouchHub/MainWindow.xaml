@@ -129,13 +129,32 @@
                              Foreground="{StaticResource TextPrimaryBrush}" Margin="7,0,0,0" VerticalAlignment="Center" />
                 </StackPanel>
               </Border>
-              <Border x:Name="TvSetupBadge" Grid.Column="1" HorizontalAlignment="Right"
-                      Background="{StaticResource TileChipBrush}" BorderBrush="{StaticResource AccentWarmBrush}"
-                      BorderThickness="1" CornerRadius="10" Padding="10,5" Visibility="Collapsed">
-                <TextBlock Text="SETUP REQUIRED" FontSize="13" Foreground="{StaticResource AccentWarmBrush}" />
-              </Border>
+              <!-- Unread badge (v0.7.0): count of new episodes from
+                   RedSilk TV. A real button, not a chip — clicking it
+                   opens the New episodes view instead of launching
+                   the TV tile (its handler marks the click handled so
+                   the tile underneath never fires). -->
+              <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button x:Name="TvNotificationBadgeButton" Style="{StaticResource BadgeButtonStyle}"
+                        Visibility="Collapsed" Click="TvNotificationBadge_Click" Margin="0,0,8,0">
+                  <TextBlock x:Name="TvNotificationBadgeText" Text="" />
+                </Button>
+                <Border x:Name="TvSetupBadge" Background="{StaticResource TileChipBrush}" BorderBrush="{StaticResource AccentWarmBrush}"
+                        BorderThickness="1" CornerRadius="10" Padding="10,5" Visibility="Collapsed">
+                  <TextBlock Text="SETUP REQUIRED" FontSize="13" Foreground="{StaticResource AccentWarmBrush}" />
+                </Border>
+              </StackPanel>
             </Grid>
             <StackPanel Grid.Row="2">
+              <!-- "New episodes available" (v0.7.0): nonintrusive
+                   indicator under the guide rows. Also a real button —
+                   clicking it opens the New episodes view, not the TV
+                   app (same handled-click behaviour as the badge). -->
+              <Button x:Name="TvNewEpisodesIndicator" Style="{StaticResource BadgeButtonStyle}"
+                      HorizontalAlignment="Left" Visibility="Collapsed"
+                      Click="TvNotificationBadge_Click" Margin="0,0,0,14">
+                <TextBlock Text="✦  New episodes available" />
+              </Button>
               <StackPanel x:Name="TvNowPanel" Visibility="Collapsed">
                 <TextBlock x:Name="TvNowTitle" Text="" FontSize="26" FontWeight="SemiBold"
                            Foreground="{StaticResource TextPrimaryBrush}" TextWrapping="Wrap" MaxHeight="68" />
@@ -332,6 +351,15 @@
                      TextWrapping="Wrap" Margin="8,0,0,0" />
         </StackPanel>
         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+          <!-- Shown only while the TV tile has unread episodes (v0.7.0). -->
+          <StackPanel x:Name="NewEpisodesHint" Orientation="Horizontal" VerticalAlignment="Center"
+                      Margin="18,0,0,0" Visibility="Collapsed">
+            <Border Width="26" Height="26" CornerRadius="13" BorderBrush="{StaticResource HairlineBrush}" BorderThickness="1">
+              <TextBlock Text="Y" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}"
+                         HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Border>
+            <TextBlock Text="New episodes" FontSize="16" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="7,0,0,0" />
+          </StackPanel>
           <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="18,0,0,0">
             <Border Width="26" Height="26" CornerRadius="13" BorderBrush="{StaticResource HairlineBrush}" BorderThickness="1">
               <TextBlock Text="A" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}"

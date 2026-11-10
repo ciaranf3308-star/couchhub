@@ -26,6 +26,13 @@ public partial class MainWindow : Window
     private readonly DispatcherTimer _clockTimer;
     private readonly DispatcherTimer _epgTimer;
     private readonly EpgService _epgService = new();
+    // v0.7.0: followed-series notifications from RedSilk TV. The
+    // service only reads the file the TV app owns; the watcher
+    // refreshes the badge with no polling.
+    private readonly NotificationsService _notificationsService = new();
+    private NotificationsSnapshot _notifications = NotificationsSnapshot.Empty;
+    private bool _notificationsOpen;
+    private NotificationsWindow? _notificationsWindow;
     private readonly System.Windows.Forms.NotifyIcon _trayIcon;
     // v0.6.0 (shell): the Explorer desktop RedSilk itself started, if
     // any. Return home ends that session; an Explorer the user started
@@ -76,6 +83,9 @@ public partial class MainWindow : Window
         _app.Input.Select += () => Dispatcher.BeginInvoke(ActivateSelectedTile);
         _app.Input.Back += () => Dispatcher.BeginInvoke(OnBack);
         _app.Input.OpenSettings += () => Dispatcher.BeginInvoke(OpenSettings);
+        // Y opens the new-episodes view (v0.7.0); the handler itself
+        // decides what to do when there is nothing unread.
+        _app.Input.OpenNotifications += () => Dispatcher.BeginInvoke(OpenNotifications);
         _app.Input.ReturnHomeRequested += () => Dispatcher.BeginInvoke(ShowDashboard);
         _app.Input.ControllerPresenceChanged += connected =>
             Dispatcher.BeginInvoke(() =>
@@ -129,6 +139,17 @@ public partial class MainWindow : Window
         _ = RefreshEpgAsync();
         _epgTimer.Start();
 
+        // New-episode notifications (v0.7.0): read once at startup,
+        // then the watcher refreshes the badge whenever the TV app
+        // rewrites the file. Watcher events arrive on a background
+        // thread, so marshal to the UI thread. A bad file reads as
+        // zero notifications — the dashboard never shows an error
+        // for a file it does not own.
+        _notificationsService.Changed += snapshot =>
+            Dispatcher.BeginInvoke(() => ApplyNotifications(snapshot));
+        _notificationsService.Start();
+        ApplyNotifications(_notificationsService.Current);
+
         // Register the hotkey BEFORE the status line below: a failed
         // registration reports via UpdateStatus, and it must not
         // overwrite the "settings file was damaged" message.
@@ -147,6 +168,7 @@ public partial class MainWindow : Window
     {
         _clockTimer.Stop();
         _epgTimer.Stop();
+        _notificationsService.Dispose();
         _app.Config.LastFocusedTile = _selectedIndex;
         try { _app.ConfigService.Save(_app.Config); } catch { /* best effort */ }
         if (_hotkeyRegistered) WindowHelper.UnregisterHotkey(this, ReturnHomeHotkeyId);
@@ -296,6 +318,76 @@ public partial class MainWindow : Window
         }
     }
 
+    // ----- Followed-series notifications (v0.7.0) ---------------------------
+
+    private void ApplyNotifications(NotificationsSnapshot snapshot)
+    {
+        _notifications = snapshot;
+        bool hasUnread = snapshot.UnreadCount > 0 && snapshot.Notifications.Count > 0;
+        TvNotificationBadgeButton.Visibility = hasUnread ? Visibility.Visible : Visibility.Collapsed;
+        TvNewEpisodesIndicator.Visibility = hasUnread ? Visibility.Visible : Visibility.Collapsed;
+        NewEpisodesHint.Visibility = hasUnread ? Visibility.Visible : Visibility.Collapsed;
+        if (hasUnread)
+        {
+            TvNotificationBadgeText.Text = snapshot.UnreadCount == 1
+                ? "1 new"
+                : $"{snapshot.UnreadCount} new";
+        }
+    }
+
+    /// <summary>
+    /// Badge / indicator click (mouse). The badge and the indicator
+    /// are real buttons nested inside the TV tile button: marking the
+    /// click handled stops it bubbling to the tile, so opening the
+    /// list never also launches the TV app.
+    /// </summary>
+    private void TvNotificationBadge_Click(object sender, RoutedEventArgs e)
+    {
+        e.Handled = true;
+        OpenNotifications();
+    }
+
+    private void OpenNotifications()
+    {
+        if (_notificationsOpen || !IsVisible) return;
+        if (_notifications.UnreadCount <= 0 || _notifications.Notifications.Count == 0)
+        {
+            UpdateStatus("No new episodes yet — RedSilk TV will list them here when it finds some.");
+            return;
+        }
+        _notificationsOpen = true;
+        _notificationsWindow = new NotificationsWindow(_notifications.Notifications, OnNotificationChosen);
+        _notificationsWindow.Owner = this;
+        _notificationsWindow.ShowDialog();
+        _notificationsOpen = false;
+        _notificationsWindow = null;
+        // The file may have changed while the view was open; re-read
+        // so the badge matches what the TV app has now.
+        ApplyNotifications(_notificationsService.Refresh());
+        FocusSelectedTile();
+    }
+
+    /// <summary>
+    /// A row was picked in the New episodes view. Deep-links into the
+    /// TV app at that series/episode; returns false (and shows a plain
+    /// error) when the TV app is not configured, is a Store app that
+    /// cannot take arguments, or the id is not safe to pass. On
+    /// success the dashboard hides like a normal TV launch, when the
+    /// TV tile is configured to hide on launch.
+    /// </summary>
+    private bool OnNotificationChosen(SeriesNotification notification)
+    {
+        if (!NotificationsService.TryLaunchDeepLink(_app.Config.Tv, notification, out string error))
+        {
+            UpdateStatus(error);
+            MessageBox.Show(error, "RedSilk",
+                MessageBoxButton.OK, MessageBoxImage.Warning);
+            return false;
+        }
+        if (_app.Config.Tv.HideOnLaunch) HideDashboard();
+        return true;
+    }
+
     private void FocusSelectedTile()
     {
         _tiles[_selectedIndex].Focus();
@@ -326,7 +418,7 @@ public partial class MainWindow : Window
 
     private void OnNavigate(NavDirection dir)
     {
-        if (_settingsOpen || !IsVisible) return;
+        if (_settingsOpen || _notificationsOpen || !IsVisible) return;
         // Tiles sit in a single row: Left/Right move, Up/Down wrap to the ends.
         int next = dir switch
         {
@@ -342,7 +434,7 @@ public partial class MainWindow : Window
 
     private void OnBack()
     {
-        if (_settingsOpen || !IsVisible) return;
+        if (_settingsOpen || _notificationsOpen || !IsVisible) return;
         // B / Esc on the dashboard = go to the Windows desktop. As
         // the shell that means starting it if it is not running —
         // merely hiding would leave a black screen with no taskbar.
@@ -351,7 +443,7 @@ public partial class MainWindow : Window
 
     private void ActivateSelectedTile()
     {
-        if (_settingsOpen || !IsVisible) return;
+        if (_settingsOpen || _notificationsOpen || !IsVisible) return;
         ActivateTile(_selectedIndex);
     }
 
@@ -471,6 +563,7 @@ public partial class MainWindow : Window
         _clockTimer.Start();
         _epgTimer.Start();
         _ = RefreshEpgAsync(); // the guide may be stale after a long hide
+        ApplyNotifications(_notificationsService.Refresh()); // the notifications file may have changed too
         UpdateClock();
         WindowHelper.FlashTopmost(this);
         Activate();
@@ -506,7 +599,7 @@ public partial class MainWindow : Window
 
     protected override void OnPreviewKeyDown(KeyEventArgs e)
     {
-        if (_settingsOpen) { base.OnPreviewKeyDown(e); return; }
+        if (_settingsOpen || _notificationsOpen) { base.OnPreviewKeyDown(e); return; }
         switch (e.Key)
         {
             case Key.Left: OnNavigate(NavDirection.Left); e.Handled = true; break;
@@ -514,6 +607,7 @@ public partial class MainWindow : Window
             case Key.Up: OnNavigate(NavDirection.Up); e.Handled = true; break;
             case Key.Down: OnNavigate(NavDirection.Down); e.Handled = true; break;
             case Key.Enter: ActivateSelectedTile(); e.Handled = true; break;
+            case Key.Y: OpenNotifications(); e.Handled = true; break;
             case Key.Escape: OnBack(); e.Handled = true; break;
         }
         base.OnPreviewKeyDown(e);
